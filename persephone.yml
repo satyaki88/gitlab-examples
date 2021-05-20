@@ -1,0 +1,559 @@
+# CI Pipeline
+
+# Each commit to an MR
+# +-------------+      +------------------+     +-------------------+     +---------------------+
+# | get version +----->+  spotbugs-sast   +---->+  dockerize async  +---->+ perse deploy branch +
+# |   package   |      +------------------+     | dockerize service |     | teardown branch...  |
+# +-------------+                               +-------------------+     +---------------------+
+
+
+# Each commit to master
+# +-------------+      +------------------+     +--------+     +-------------------+     +-------------------+    +-----------+
+# | get version +----->+  spotbugs-sast   +---->+ badges +---->+  dockerize async  +---->+    deploy test    +--->+ e2e tests |
+# |   package   |      +------------------+     +--------+     | dockerize service |     | deploy crons test |    +-----------+
+# +-------------+                                              +-------------------+     +-------------------+
+
+
+# PUBLISH pipeline on master or prod branch
+# +---------------+      +------------------+     +-----------+     +--------------+    +------------+
+# | mvn release   +----->+ make prod branch +---->+ dockerize +---->+ deploy iad   +--->+ e2e tests  |
+# +---------------+      | (Only on master) |     +-----------+     +--------------+    +------------+
+#                        +------------------+
+
+# Useful link for validating this file before pushing: https://gitlab.oracledatacloud.com/odc-dmp/persephone/-/ci/lint
+
+image: containers.oracledatacloud.com/harbor/base/maven:3.6.3-openjdk-11_ol7
+
+variables:
+  DOCKER_SERVICE_IMAGE: containers.oracledatacloud.com/baratheon/persephone/service
+  DOCKER_ASYNC_IMAGE: containers.oracledatacloud.com/baratheon/persephone/async
+  # Tell maven to use a specific m2 repository, which will be cached between stages
+  MAVEN_OPTS: "-Dmaven.repo.local=.m2/repository"
+  _JAVA_OPTIONS: "-Djdk.net.URLClassPath.disableClassPathURLCheck=true"
+  # Note: This is also specified for branch deployment in the Makefile
+  RABBIT_HOST_CLUSTER: "phx"
+  SAST_EXCLUDED_ANALYZERS: "eslint"
+
+stages:
+  - build
+  - test
+  - badges
+  - publish
+  - post_publish
+  - dockerize
+  - verify_docker
+  - deploy
+  - e2e
+
+workflow:
+  rules:
+    # Do not run pipelines for the maven release plugin's commits
+    - if: $CI_COMMIT_MESSAGE =~ /maven-release-plugin/
+      when: never
+    # Run pipeline for all other cases
+    - when: always
+
+# Configure cache to hold things between stages
+# dot means it's hidden. the & means it's a template
+# https://docs.gitlab.com/ee/ci/yaml/#hidden-keys-jobs
+.cache: &cache_template
+  key: PERSEPHONE
+  paths:
+  - .m2/repository/
+  - badges
+
+
+# These templates restricts a job to run only on merge requests
+.only-mr: &only_mr
+  tags: [odc-common-build]
+  rules:
+    - if: $CI_MERGE_REQUEST_ID
+.only-mr-manual: &only_mr_manual
+  tags: [odc-common-build]
+  rules:
+  - if: $CI_MERGE_REQUEST_ID
+    when: manual
+    allow_failure: true
+
+# This template restricts a job from running unless doing a PUBLISH on master or a prod branch
+.prod-publish: &only_prod_publish
+  rules:
+    - if: $CI_COMMIT_BRANCH == "master" && $PUBLISH
+    - if: $CI_COMMIT_BRANCH =~ /^prod/ && $PUBLISH
+
+# This template restricts a job from running unless it's on master or a prod (i.e. something
+# that could be published)
+.publishable-manual: &only_publishable_manual
+  rules:
+    - if: $CI_COMMIT_BRANCH == "master" || $CI_COMMIT_BRANCH =~ /^prod/
+      when: manual
+      allow_failure: true
+
+# This template restricts a job to run only on master, no PUBLISHing
+.only-master: &only_master
+  tags: [odc-common-build]
+  rules:
+  - if: $CI_COMMIT_BRANCH == "master" && $PUBLISH == null
+
+package:
+  stage: build
+  tags: [odc-common-build]
+  # use default cache-push-pull which uploads cache at the end
+  cache:
+    <<: *cache_template
+  rules:
+    - if: $CI_COMMIT_BRANCH == "master" && $PUBLISH == null
+    - if: $CI_MERGE_REQUEST_ID
+  script:
+    - mvn -Ddependency-check.skip=false package verify
+    - ./bin/outputCodeCoverage.sh
+    # capture the total vulnerabilities found and log it (Skipping HIGH)
+    - find . -type f -name 'dependency-check-report.csv' -exec cat {} \; | grep -e '\(CRITICAL\),[0-9]\.[0-9]' | wc -l 2>/dev/null > audit_p || echo 'Finished reviewing results'
+    - total=$(cat audit_p)
+    - echo "Found ${total} audit issues"
+    # Set a color for the badge, green by default
+    - color='4c1'
+    - if [[ $total -ge 2 ]]; then color='e05d44'; fi
+    # Create badge
+    - mkdir -p badges
+    - buildVulnerabilitiesBadge $color $total > badges/audit.svg
+    # Move jars to be artifacts
+    - mv service/target/*.jar service/target/persephone.jar
+    - mv async/target/*.jar async/target/persephone.jar
+    - cp ~/.m2/settings.xml settings.xml
+  artifacts:
+    untracked: false
+    expire_in: 2 day
+    paths:
+      - async/target/classes
+      - async/target/persephone.jar
+      - client/target/classes
+      - model/target/classes
+      - service/target/classes
+      - service/target/persephone.jar
+      - settings.xml
+    reports:
+      junit:
+        - service/target/surefire-reports/TEST-*.xml
+
+################# 
+################# SAST
+################# 
+include:
+  - template: SAST.gitlab-ci.yml
+
+# Override spotbugs so we can provide the settings XML
+spotbugs-sast:
+  <<: *only_mr
+  dependencies:
+    - package
+  tags: [odc-sast]
+  variables:
+    MAVEN_REPO_PATH: "$CI_BUILDS_DIR/.m2/repository"
+    SAST_JAVA_VERSION: "11"
+    # This image doesn't have the correct settings file, so we bring it in from 
+    # the package job and tell mvn to use it with this variable
+    MAVEN_CLI_OPTS: "-s settings.xml"
+  script:
+    # Sadly mvn tries to use /root/.m2/repository and that doesn't exist
+    - mkdir -p $CI_BUILDS_DIR/.m2/repository
+    - /analyzer run -compile=false
+  artifacts:
+    reports:
+      sast: gl-sast-report.json
+
+
+# This job presents all badges as artifacts, available to Gitlab to show.
+badges:
+  stage: badges
+  tags: [odc-common-build]
+  rules:
+    - if: $CI_COMMIT_BRANCH == "master"
+  cache:
+    <<: *cache_template
+    policy: pull
+  script:
+    - echo 'Here are your badges my friend.'
+    - ls badges
+  artifacts:
+    expire_in: 1 month
+    paths: [badges]
+
+
+# This job will get the current version of this project, trim any -SNAPSHOT
+# and write it to a file to be referenced in later jobs.
+get version:
+  stage: build
+  tags: [odc-common-build]
+  rules:
+    - if: $CI_COMMIT_BRANCH == "master"
+    - if: $CI_MERGE_REQUEST_ID
+    - if: $CI_COMMIT_BRANCH =~ /^prod/
+  script:
+    - P_VERSION=$(mvn --non-recursive help:evaluate -Dexpression=project.version | grep -v '\[.*' | tail -n 1)
+    - P_VERSION="$(cut -d'-' -f 1 <<< $P_VERSION)"
+    - echo "Getting version ${P_VERSION}"
+    - echo $P_VERSION > version.txt
+  artifacts:
+    untracked: false
+    expire_in: 1 month
+    paths:
+      - version.txt
+
+
+# When manually kicked, this performs a release and deployment of the artifact
+# so long as PUBLISH is provided
+mvn release:
+  <<: *only_prod_publish
+  stage: publish
+  tags: [odc-common-build]
+  # use default cache-push-pull which uploads cache at the end
+  cache:
+    <<: *cache_template
+    policy: pull
+  dependencies:
+    - get version
+  script:
+    # Because CI runs on HEAD, we have to be on a branch to commit and push
+    - git checkout -B $CI_COMMIT_REF_NAME origin/$CI_COMMIT_REF_NAME
+    # Generate release notes - these have to be in strings to encode them because they contains special characters
+    - 'git log $(git describe --tags --abbrev=0)..HEAD --pretty="[%h](https://gitlab.oracledatacloud.com/$CI_PROJECT_PATH/commit/%H) - %s (%an)<br>" | sed -E "s/(HELP|CAPA)-[0-9]*/\[&\]\(\https:\/\/jira\.oracledatacloud\.com\/browse\/&)/" > changes.md'
+    - 'echo "{\"description\": \"<h3>Changes</h3>\n$(cat changes.md)\"}" > release_notes.json'
+    - 'curl $SLACK_WEBHOOK_URL -d "{\"text\": \":ship_it_parrot: $GITLAB_USER_NAME  preparing Persephone  $(cat version.txt) for production release :ship_it_parrot: Check out the release notes https://gitlab.oracledatacloud.com/odc-dmp/persephone/releases\"}"'
+    # Do release, and skip running tests again, skip doing javadocs
+    - mvn release:prepare release:perform -B -Darguments="-DskipTests -Dmaven.javadoc.skip=true"
+    - mv service/target/*.jar service/target/persephone.jar
+    - mv async/target/*.jar async/target/persephone.jar
+    # Post release notes
+    - 'curl -i -X POST -H "Content-Type: application/json" -H "Private-Token: $RELEASE_NOTES_KEY" -d @release_notes.json https://gitlab.oracledatacloud.com/api/v4/projects/$CI_PROJECT_ID/repository/tags/$(git describe --tags --abbrev=0)/release'
+  artifacts:
+    untracked: false
+    expire_in: 1 month
+    paths:
+      - service/target/persephone.jar
+      - async/target/persephone.jar
+
+# This job will build the "prod" branch after pressing release artifacts from master
+build prod branch:
+  stage: post_publish
+  tags: [odc-common-build]
+  dependencies:
+    - get version # grab artifacts from the release to get the version.txt
+  rules:
+    - if: $CI_COMMIT_BRANCH == "master" && $PUBLISH
+  script:
+    # Set the remote to be an SSH origin instead of HTTPS
+    - git remote set-url origin $SSH_ORIGIN
+    # Determine the branch name
+    - P_VERSION=$(cat version.txt)
+    # create prod branch and push to origin
+    - git checkout -b prod/${P_VERSION}
+    # Update the version in the pom to the next hotfix snapshot
+    - mvn versions:set -DnewVersion=${P_VERSION}.1-SNAPSHOT
+    # commit pom changes
+    - git commit -am 'Preparing poms for hotfixes'
+    - git push origin prod/${P_VERSION}
+
+
+# This template sets common things for doing a docker build
+.docker-build: &docker_build
+  stage: dockerize
+  image:
+    # We must use the debug version because it has the embedded shell, which we use in our script below
+    name: gcr.io/kaniko-project/executor:debug-v0.24.0
+    entrypoint: ['']
+  tags: [odc-docker-build]
+  # use cache-pull which does not try to upload cache at the end
+  cache:
+    <<: *cache_template
+    policy: pull
+
+.docker-build-service: &docker_build_service
+  <<: *docker_build
+  script:
+    # For actual releases (when $PUBLISH is set), tag the image as the actual version.
+    # For everything else, tag the image with the commit hash.
+    - if [ -n "$PUBLISH" ]; then DOCKER_TAG=$(cat version.txt); else DOCKER_TAG=$CI_COMMIT_SHA; fi
+    - echo Building $DOCKER_SERVICE_IMAGE:$DOCKER_TAG
+    - /kaniko/executor --context $CI_PROJECT_DIR --dockerfile $CI_PROJECT_DIR/Dockerfile --build-arg MODULE_DIR=service --destination $DOCKER_SERVICE_IMAGE:$DOCKER_TAG
+
+.docker-build-async: &docker_build_async
+  <<: *docker_build
+  script:
+    # For actual releases (when $PUBLISH is set), tag the image as the actual version.
+    # For everything else, tag the image with the commit hash.
+    - if [ -n "$PUBLISH" ]; then DOCKER_TAG=$(cat version.txt); else DOCKER_TAG=$CI_COMMIT_SHA; fi
+    - echo Building $DOCKER_ASYNC_IMAGE:$DOCKER_TAG
+    - /kaniko/executor --context $CI_PROJECT_DIR --dockerfile $CI_PROJECT_DIR/Dockerfile --build-arg MODULE_DIR=async --destination $DOCKER_ASYNC_IMAGE:$DOCKER_TAG
+
+dockerize service branch:
+  <<: *only_mr_manual
+  <<: *docker_build_service
+  dependencies:
+    - package
+
+dockerize service:
+  <<: *only_master
+  <<: *docker_build_service
+  dependencies:
+    - package
+
+dockerize service release:
+  <<: *only_prod_publish
+  <<: *docker_build_service
+  dependencies:
+    - mvn release
+    - get version
+
+dockerize async branch:
+  <<: *only_mr_manual
+  <<: *docker_build_async
+  dependencies:
+    - package
+
+dockerize async:
+  <<: *only_master
+  <<: *docker_build_async
+  dependencies:
+    - package
+
+dockerize async release:
+  <<: *only_prod_publish
+  <<: *docker_build_async
+  dependencies:
+    - mvn release
+    - get version
+
+# This template sets common things for doing a persephone deployment to kubernetes
+.persephone-deploy: &persephone_deployment
+  stage: deploy
+  image: containers.oracledatacloud.com/oracledatacloud.com/helmsman:v1.10.1-helm-v2.14.1-nonRoot
+  dependencies:
+    - get version # grab artifacts from the release to get the version.txt
+  # no need to d/l cache b/c we are just deploying images from containers.oracledatacloud.com
+  cache: {}
+  tags: [us-iad-a,baratheon]
+  retry:
+    max: 2
+    when: runner_system_failure
+  script:
+    - if [ -n "$PUBLISH" ]; then DOCKER_TAG=$(cat version.txt); else DOCKER_TAG=$CI_COMMIT_SHA; fi
+    - echo "Using image $DOCKER_SERVICE_IMAGE:$DOCKER_TAG"
+    - echo "Will deploy this from template"
+    - echo "Using RabbitMQ in cluster $RABBIT_HOST_CLUSTER"
+    # NOTE: '--execute` flag will need to be replaced by '--show-only' when upgrading to helm 3
+    # https://github.com/helm/helm/issues/5887#issuecomment-557289533
+    - 'helm template kubernetes --execute templates/appsecret.yaml --execute templates/deployment.yaml
+       --execute templates/ingress.yaml --execute templates/prometheus-rules.yaml --execute templates/service.yaml
+       -f $DEPLOY_ROLE
+       --set image=$DOCKER_SERVICE_IMAGE:$DOCKER_TAG --set rabbitmq_cluster=$RABBIT_HOST_CLUSTER
+       > deploy.yaml'
+    - cat deploy.yaml
+    - cat deploy.yaml | kubectl -n $NAMESPACE apply -f -
+    - echo "Watching for successful rollout"
+    - kubectl -n $NAMESPACE rollout status deployment/$DEPLOY_NAME
+
+# This template sets common things for doing a cronjob deployment to kubernetes
+.cronjob-deploy: &cronjob_deployment
+  stage: deploy
+  image: containers.oracledatacloud.com/oracledatacloud.com/helmsman:v1.10.1-helm-v2.14.1-nonRoot
+  dependencies:
+    - get version # grab artifacts from the release to get the version.txt
+    - dockerize async # these jobs are manual, don't make them runnable until dockerize job is complete
+  # no need to d/l cache b/c we are just deploying images from containers.oracledatacloud.com
+  cache: {}
+  tags: [us-iad-a,baratheon]
+  retry:
+    max: 2
+    when: runner_system_failure
+  script:
+    - if [ -n "$PUBLISH" ]; then DOCKER_TAG=$(cat version.txt); else DOCKER_TAG=$CI_COMMIT_SHA; fi
+    - echo "Using image $DOCKER_ASYNC_IMAGE:$DOCKER_TAG"
+    - echo "Will deploy this from template"
+    # NOTE: '--execute` flag will need to be replaced by '--show-only' when upgrading to helm 3
+    # https://github.com/helm/helm/issues/5887#issuecomment-557289533
+    - |
+      for cron in $CRONS_TO_DEPLOY; do
+        helm template kubernetes --execute templates/cronjob.yaml -f $DEPLOY_ROLE -f $cron --set image="$DOCKER_ASYNC_IMAGE:$DOCKER_TAG" --set rabbitmq_cluster=$RABBIT_HOST_CLUSTER
+        helm template kubernetes --execute templates/cronjob.yaml -f $DEPLOY_ROLE -f $cron --set image="$DOCKER_ASYNC_IMAGE:$DOCKER_TAG" --set rabbitmq_cluster=$RABBIT_HOST_CLUSTER | kubectl -n $NAMESPACE apply -f -
+      done
+
+perse deploy branch:
+  <<: *only_mr_manual
+  stage: deploy
+  image: containers.oracledatacloud.com/oracledatacloud.com/helmsman:v1.10.1-helm-v2.14.1-nonRoot
+  tags: [us-phx-a, baratheon]
+  dependencies: []
+  cache: { }
+  environment:
+    name: review/$CI_COMMIT_REF_SLUG
+    url: https://persephone-$CI_COMMIT_REF_SLUG.us-phx-a.k8s.oracledatacloud.com
+    on_stop: teardown branch deployment
+  variables:
+    DEPLOY_ROLE: kubernetes/branch.yaml
+    NAMESPACE: baratheon-dev
+    DEPLOY_NAME: persephone-$CI_COMMIT_REF_SLUG
+  script:
+    - DOCKER_TAG=$CI_COMMIT_SHA
+    - echo "Using image $DOCKER_SERVICE_IMAGE:$DOCKER_TAG"
+    - echo "Will deploy this from template"
+    - 'helm template kubernetes --execute templates/appsecret.yaml --execute templates/deployment.yaml
+       --execute templates/prometheus-rules.yaml --execute templates/service.yaml
+       -f $DEPLOY_ROLE
+       --set image=$DOCKER_SERVICE_IMAGE:$DOCKER_TAG --set rabbitmq_cluster=$RABBIT_HOST_CLUSTER
+       --set name=persephone-$CI_COMMIT_REF_SLUG
+       > deploy.yaml'
+    - cat deploy.yaml
+    - cat deploy.yaml | kubectl -n $NAMESPACE apply -f -
+    - echo "Deploying ingress"
+    - 'helm template kubernetes --execute templates/ingress.yaml
+       -f $DEPLOY_ROLE
+       --set image=$DOCKER_SERVICE_IMAGE:$DOCKER_TAG --set rabbitmq_cluster=$RABBIT_HOST_CLUSTER
+       --set name=persephone-$CI_COMMIT_REF_SLUG --set tls.hosts={persephone-$CI_COMMIT_REF_SLUG.us-phx-a.k8s.oracledatacloud.com}
+       --set hosts={persephone-$CI_COMMIT_REF_SLUG.us-phx-a.k8s.oracledatacloud.com}
+       > deploy.yaml'
+    - cat deploy.yaml
+    - cat deploy.yaml | kubectl -n $NAMESPACE apply -f -
+    - echo "Watching for successful rollout"
+    - kubectl -n $NAMESPACE rollout status deployment/$DEPLOY_NAME
+
+# This job will remove the branch deployment, but only run manually
+teardown branch deployment:
+  <<: *only_mr_manual
+  stage: deploy
+  tags: [us-phx-a, baratheon]
+  environment:
+    name: review/$CI_COMMIT_REF_SLUG
+    action: stop
+  script:
+    - echo "Removing app"
+    - kubectl -n baratheon-dev delete deploy,ing,service,prometheusrules persephone-$CI_COMMIT_REF_SLUG
+
+perse IAD test deploy:
+  <<: *only_master
+  <<: *persephone_deployment
+  environment:
+    name: test
+    url: https://persephone-test.us-iad-a.k8s.oracledatacloud.com
+  variables:
+    DEPLOY_ROLE: kubernetes/test.yaml
+    NAMESPACE: baratheon-test
+    DEPLOY_NAME: persephone
+
+perse IAD prod deploy:
+  <<: *only_prod_publish
+  <<: *persephone_deployment
+  environment:
+    name: prod-iad
+    url: https://persephone-prod.us-iad-a.k8s.oracledatacloud.com
+  variables:
+    DEPLOY_ROLE: kubernetes/prod-iad.yaml
+    NAMESPACE: baratheon-prod
+    DEPLOY_NAME: persephone
+  after_script:
+    - 'curl $SLACK_WEBHOOK_URL -d "{\"text\": \"$GITLAB_USER_NAME pushed Persephone $(cat version.txt) to production in IAD OCI :dancingpanda:\"}"'
+
+perse PHX prod deploy:
+  <<: *only_prod_publish
+  <<: *persephone_deployment
+  tags: [us-phx-a,baratheon]
+  environment:
+    name: prod-phx
+    url: https://persephone-prod.us-phx-a.k8s.oracledatacloud.com
+  variables:
+    DEPLOY_ROLE: kubernetes/prod-phx.yaml
+    NAMESPACE: baratheon-prod
+    DEPLOY_NAME: persephone
+  after_script:
+    - 'curl $SLACK_WEBHOOK_URL -d "{\"text\": \"$GITLAB_USER_NAME pushed Persephone $(cat version.txt) to production in PHX OCI :dancingpanda:\"}"'
+
+perse IAD sandbox deploy:
+  <<: *only_prod_publish
+  <<: *persephone_deployment
+  environment:
+    name: sandbox
+    url: https://persephone-sandbox.us-iad-a.k8s.oracledatacloud.com
+  variables:
+    DEPLOY_ROLE: kubernetes/sandbox.yaml
+    NAMESPACE: baratheon-sandbox
+    DEPLOY_NAME: persephone
+
+perse IAD stg deploy:
+  <<: *only_publishable_manual
+  <<: *persephone_deployment
+  environment:
+    name: stg
+    url: https://persephone-stg.us-iad-a.k8s.oracledatacloud.com
+  variables:
+    DEPLOY_ROLE: kubernetes/stg.yaml
+    NAMESPACE: baratheon-stg
+    DEPLOY_NAME: persephone
+
+crons IAD test deploy:
+  <<: *only_master
+  <<: *cronjob_deployment
+  variables:
+    CRONS_TO_DEPLOY: kubernetes/cronjobs/withdraw-audience-grants.yaml kubernetes/cronjobs/base-cmd-with-flags.yaml
+    DEPLOY_ROLE: kubernetes/test.yaml
+    NAMESPACE: baratheon-test
+    DEPLOY_NAME: persephone
+
+crons IAD prod deploy:
+  <<: *only_prod_publish
+  <<: *cronjob_deployment
+  variables:
+    CRONS_TO_DEPLOY: kubernetes/cronjobs/withdraw-audience-grants.yaml kubernetes/cronjobs/base-cmd-with-flags.yaml kubernetes/cronjobs/pixel-url-failed-command.yaml kubernetes/cronjobs/deliver-daily-cat-list.yaml kubernetes/cronjobs/vendor-integrity-command.yaml
+    DEPLOY_ROLE: kubernetes/prod-iad.yaml
+    NAMESPACE: baratheon-prod
+    DEPLOY_NAME: persephone
+
+crons IAD sandbox deploy:
+  <<: *only_prod_publish
+  <<: *cronjob_deployment
+  variables:
+    CRONS_TO_DEPLOY: kubernetes/cronjobs/withdraw-audience-grants.yaml kubernetes/cronjobs/base-cmd-with-flags.yaml
+    DEPLOY_ROLE: kubernetes/sandbox.yaml
+    NAMESPACE: baratheon-sandbox
+    DEPLOY_NAME: persephone
+
+crons IAD stg deploy:
+  <<: *only_publishable_manual
+  <<: *cronjob_deployment
+  variables:
+    CRONS_TO_DEPLOY: kubernetes/cronjobs/withdraw-audience-grants.yaml kubernetes/cronjobs/base-cmd-with-flags.yaml
+    DEPLOY_ROLE: kubernetes/stg.yaml
+    NAMESPACE: baratheon-stg
+    DEPLOY_NAME: persephone
+
+e2e tests:
+  <<: *only_master
+  stage: e2e
+  dependencies:
+    - package
+  # use cache-pull which does not try to upload cache at the end
+  cache:
+    <<: *cache_template
+    policy: pull
+  script:
+    # Requires a valid BKSSO from 5892
+    - mvn test -P e2e
+  artifacts:
+    reports:
+      junit:
+        - service/target/surefire-reports/TEST-*.xml
+        
+backwards compatibility tests:
+  stage: e2e
+  tags: [odc-common-build]
+  rules:
+    - if: $CI_COMMIT_BRANCH =~ /^prod/ && $COMPAT_TEST
+  # use cache-pull which does not try to upload cache at the end
+  cache:
+    <<: *cache_template
+    policy: pull
+  script:
+    - mvn test -P e2e
+  artifacts:
+    reports:
+      junit:
+        - service/target/surefire-reports/TEST-*.xml
