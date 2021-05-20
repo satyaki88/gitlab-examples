@@ -1,0 +1,560 @@
+# Reaper CI Pipeline
+#
+# Each commit to a branch
+# +---------------+      +-----------------+      +-----------+     +---------------+
+# | install_deps  +----->+ build bundle &  +----->+ dockerize +---->+ deploy branch |
+# +---------------+      | test            |      +-----------+     +---------------+
+#                        +-----------------+
+#
+# Each commit to master
+# +---------------+      +-----------------+      +-----------+     +--------------+    +------------+
+# | install_deps  +----->+ build bundle &  +----->+ dockerize +---->+ deploy test  +--->+ e2e tests  |
+# +---------------+      + test, audit CVEs|      +-----------+     | deploy stg   |    +------------+
+#                        +-----------------+                        +--------------+
+#
+# PUBLISH pipeline on master or prod branch
+# +---------------+      +-----------------+      +-------------+   +------------------+     +-----------+     +--------------+    +---------------------+
+# | install_deps  +----->+ build bundle &  +----->+ npm publish +-->+ make prod branch +---->+ dockerize +---->+ deploy oci   +--->+ release smoke tests |
+# +---------------+      | test            |      +-------------+   | (Only on master) |     +-----------+     |  phx & iad   |    +---------------------+
+#                        +-----------------+                        +------------------+                       +--------------+
+
+image: containers.oracledatacloud.com/harbor/ci/node:14.15.4_ol7_1
+
+stages:
+    - initialize
+    - validate
+    - build
+    - test
+    - publish
+    - post_publish
+    - dockerize
+    - verify_docker
+    - deploy
+    - build_e2e
+    - e2e
+    - post_e2e
+    - badges
+
+variables:
+    SAST_DISABLE_DIND: "true"
+    SAST_EXCLUDED_PATHS: "__tests__,build"
+
+# Configure cache to hold things between stages
+# dot means it's hidden. the & means it's a template
+# https://docs.gitlab.com/ee/ci/yaml/#hidden-keys-jobs
+.cache: &cache_template
+    key: REAPER
+    paths:
+        - node_modules/
+        - e2e_refs/
+        - badges/
+
+# This template restricts a job from running unless it's on master or a prod (i.e. something
+# that could be published)
+.publishable-manual: &only_publishable_manual
+  rules:
+    - if: $CI_COMMIT_BRANCH == "master" || $CI_COMMIT_BRANCH =~ /^prod/
+      when: manual
+      allow_failure: true
+
+# This template restricts a job from running unless doing a PUBLISH on master or a prod branch
+.prod-publish: &only_prod_publish
+    tags: [odc-common-build]
+    rules:
+      - if: ($CI_COMMIT_BRANCH == "master" || $CI_COMMIT_BRANCH =~ /^prod/) && ($VERSION == "patch" || $VERSION == "minor" || $VERSION == "major")
+
+# This template restricts a job to run only on master, no PUBLISHing
+.only-master: &only_master
+    tags: [odc-common-build]
+    rules:
+      - if: $CI_COMMIT_BRANCH == "master" && $VERSION == null && $E2E_ENVIRONMENT == null 
+
+# This template restricts a job to run only on merge requests
+.only-mr: &only_mr
+    tags: [odc-common-build]
+    rules:
+      - if: $CI_MERGE_REQUEST_ID
+.only-mr-manual: &only_mr_manual
+    tags: [odc-common-build]
+    rules:
+        - if: $CI_MERGE_REQUEST_ID
+          when: manual
+          allow_failure: true
+include:
+  - template: SAST.gitlab-ci.yml
+
+eslint-sast:
+  tags: [odc-sast]
+  rules:
+    - if: $CI_MERGE_REQUEST_ID
+
+nodejs-scan-sast:
+  tags: [odc-sast]
+  rules:
+    - if: $CI_MERGE_REQUEST_ID
+    
+
+install_deps_mr:
+    <<: *only_mr
+    stage: initialize
+    # use default cache-push-pull which uploads cache at the end
+    cache:
+        <<: *cache_template
+    script:
+        - npm ci
+
+install_deps:
+    <<: *only_master
+    stage: initialize
+    # use default cache-push-pull which uploads cache at the end
+    cache:
+        <<: *cache_template
+    retry:
+        max: 2
+        when: runner_system_failure
+    script:
+        - npm ci
+
+# TODO: turn on after all files have been moved over to prettier
+# then when someone tries to be sneaky and checks in code without prettifying it (kinda hard atm)
+# then BOOM, CI screams at you
+.validate_prettify:
+    <<: *only_mr
+    stage: validate
+    tags: [odc-common-build]
+    cache:
+        <<: *cache_template
+    script:
+        - npm run format:check
+
+# Audits this library for vulnerabilities
+audit:
+    <<: *only_master
+    stage: build
+    # use cache-pull which does not try to upload cache at the end
+    cache:
+        <<: *cache_template
+    script:
+        - mkdir -p badges
+        # Print audit results to console without breaking the build (The `2>/dev/null` will escape the exit code 1 when npm audit finds vulnerabilities)
+        - npm audit --parseable --registry="https://registry.npmjs.org/" 2>/dev/null || echo 'All done'
+        - npm audit --parseable --registry="https://registry.npmjs.org/" | egrep '(high|critical)' -c 2>/dev/null > audit_p || echo 'Finished writing results'
+        - total=$(cat audit_p)
+        - echo "Found ${total} audit issues"
+        # Set a color for the badge, red if CVEs >= 1, otherwise green
+        - if [[ $total -ge 1 ]]; then color='e05d44'; else color='4c1'; fi
+        # Create badge
+        - buildBadge "CVEs" $color $total "high+" "140" "60" "80" "30" "100" > badges/audit.svg
+        # Audit licenses now - run licensee and capture output. Cat output, and then grep it for problems to create badge
+        # Currently, the build will not break for a bad license because the package.json script includes " || true".
+        # To allow the build to break, remove that from package.json and include "2>/dev/null" after running licensee
+        - npm run licensee > licensee_output
+        - cat licensee_output
+        - cat licensee_output | egrep 'NOT APPROVED' -c 2>/dev/null > license_problems || echo 'Finished writing license results'
+        - total=$(cat license_problems)
+        - echo "Found ${total} license issues"
+        # Set a color for the badge, red if license_problems >= 1, otherwise green
+        - if [[ $total -ge 1 ]]; then color='e05d44'; else color='4c1'; fi
+        # Create badge
+        - buildBadge "Bad Licenses" $color $total "" "115" "90" "25" "40" "100" > badges/license.svg
+
+        # The result of this is a dependencies.svg which can be added as a badge using url:
+        # https://gitlab.oracledatacloud.com/${project_path}/-/jobs/artifacts/%{default_branch}/raw/public/dependencies.svg?job=review%20dependencies
+        # Get the outdated results, without breaking the build when it finds things outdated
+        - dependencies=$(echo "$(npm outdated)" | grep $(npm info . name))
+        # Write them to the console
+        - echo "${dependencies}"
+        # capture the total found and log it
+        - total=$(echo "${dependencies}" | grep $(npm info . name) | wc -l)
+        - echo "Found ${total} outdated"
+        # Set a color for the badge, green by default
+        - color='4c1'
+        - if [[ $total -ge 21 ]]; then color='e05d44'; fi
+        # Create badge
+        - buildDependenciesBadge $color $total > badges/dependencies.svg
+
+test mr:
+    <<: *only_mr
+    stage: build
+    # not interested in svg artifacts from install_deps
+    dependencies: []
+    # use cache-pull which does not try to upload cache at the end
+    cache:
+        <<: *cache_template
+        policy: pull
+    script:
+        - npm run test-ci
+    artifacts:
+        reports:
+            junit:
+                - test-results/junit.xml
+
+test:
+    <<: *only_master
+    stage: build
+    # not interested in svg artifacts from install_deps
+    dependencies: []
+    # use cache-pull which does not try to upload cache at the end
+    cache:
+        <<: *cache_template
+        policy: pull
+    script:
+        - npm run test-ci
+    artifacts:
+        reports:
+            junit:
+                - test-results/junit.xml
+
+build:
+    <<: *only_mr
+    stage: build
+    # not interested in svg artifacts from install_deps
+    dependencies: []
+    # use cache-pull which does not try to upload cache at the end
+    cache:
+        <<: *cache_template
+        policy: pull
+    script:
+        - ENV=test npm run build
+    artifacts:
+        untracked: false
+        expire_in: 1 week
+        paths:
+            - build
+
+build bundle for test:
+    <<: *only_master
+    stage: build
+    # not interested in svg artifacts from install_deps
+    dependencies: []
+    # use cache-pull which does not try to upload cache at the end
+    cache:
+        <<: *cache_template
+        policy: pull
+    script:
+        - ENV=test npm run build
+    artifacts:
+        untracked: false
+        expire_in: 1 week
+        paths:
+            - build
+
+build bundle for prod:
+    <<: *only_prod_publish
+    stage: build
+    # don't care for svg artifacts from install_deps
+    dependencies: []
+    # use cache-pull which does not try to upload cache at the end
+    cache:
+        <<: *cache_template
+        policy: pull
+    script:
+        - ENV=prod NODE_ENV=production npm run build
+    artifacts:
+        untracked: false
+        expire_in: 1 week
+        paths:
+            - build
+
+# Perform the release when VERSION is specified
+# and publish to Artifactory
+publish npm:
+    <<: *only_prod_publish
+    stage: publish
+    # use cache-pull which does not try to upload cache at the end
+    cache:
+        <<: *cache_template
+        policy: pull
+    script:
+        # Because CI runs on HEAD, we have to be on a branch to commit and push
+        - git checkout -B $CI_BUILD_REF_NAME origin/$CI_BUILD_REF_NAME
+        # Generate release notes - these have to be in strings to encode them because they contains special characters
+        - 'git log $(git describe --tags --abbrev=0)..HEAD --pretty="[%h](https://gitlab.oracledatacloud.com/$CI_PROJECT_PATH/commit/%H) - %s (%an)<br>" | sed -E "s/(HELP|CAPA)-[0-9]*/\[&\]\(\https:\/\/jira\.oracledatacloud\.com\/browse\/&)/" > changes.md'
+        - 'echo "{\"description\": \"<h3>Changes</h3>\n$(cat changes.md)\"}" > release_notes.json'
+        # Update the version and push to origin
+        - npm version $VERSION
+        - git push --follow-tags
+        # With git up to date, publish the artifact to artifactory
+        - npm publish
+        # Post release notes
+        - 'curl -i -X POST -H "Content-Type: application/json" -H "Private-Token: $RELEASE_NOTES_KEY" -d @release_notes.json https://gitlab.oracledatacloud.com/api/v4/projects/$CI_PROJECT_ID/repository/tags/$(git describe --tags --abbrev=0)/release'
+        # Get the version from package.json using a JS script
+        - echo "var pjson = require('./package.json'); console.log(pjson.version);" > script.js
+        # Run said script and dump to console
+        - node script.js
+        - node script.js > reaper_version.txt
+        - 'curl $SLACK_WEBHOOK_URL -d "{\"text\": \":ship_it_parrot: $GITLAB_USER_NAME preparing Reaper $(cat reaper_version.txt) for production :ship_it_parrot:\nCheck out the release notes: https://gitlab.oracledatacloud.com/odc-dmp/reaper/releases\"}"'
+    # This artifact contains the current version of reaper, accessible to all later jobs
+    artifacts:
+        untracked: false
+        expire_in: 1 day
+        paths:
+            - reaper_version.txt
+            - release_notes.json
+
+# This job will build a prod branch when a release is made from master.
+# This prod branch will be named `prod/VERSION`, and is used for any hotfixes
+create hotfix branch:
+    stage: post_publish
+    tags: [odc-common-build]
+    rules:
+      - if: $CI_COMMIT_BRANCH == "master" && ($VERSION == "patch" || $VERSION == "minor" || $VERSION == "major")
+    script:
+        - echo 'Creating hotfix branch'
+        # Set the remote to be an SSH origin instead of HTTPS
+        - git remote set-url origin $SSH_ORIGIN
+        # Determine the branch name
+        - REAPER_VERSION=$(cat reaper_version.txt)
+        # Check out the tag so branch includes it
+        - git checkout v${REAPER_VERSION}
+        # create prod branch and push to origin
+        - git checkout -b prod/${REAPER_VERSION}
+        - git push origin prod/${REAPER_VERSION}
+        - 'curl $SLACK_WEBHOOK_URL -d "{\"text\":\"Created Reaper hotfix branch `prod/${REAPER_VERSION}`\"}"'
+
+.docker-build: &docker_build
+    stage: dockerize
+    image:
+        # We must use the debug version because it has the embedded shell, which we use in our script below
+        name: gcr.io/kaniko-project/executor:debug-v0.16.0
+        entrypoint: ['']
+    tags: [odc-docker-build]
+    # use cache-pull which does not try to upload cache at the end
+    cache:
+        <<: *cache_template
+        policy: pull
+
+update base express image:
+    <<: *docker_build
+    stage: post_publish
+    # Since this only will override the only_master template, this will include that definition too
+    rules:
+        - if: ($CI_COMMIT_BRANCH == "master" || $CI_COMMIT_BRANCH =~ /^prod/) && ($VERSION == "patch" || $VERSION == "minor" || $VERSION == "major")
+        - changes:
+            - containers/base-express/*
+    script:
+        - /kaniko/executor --context $CI_PROJECT_DIR/containers/base-express --dockerfile $CI_PROJECT_DIR/containers/base-express/Dockerfile --destination containers.oracledatacloud.com/baratheon/base-express:latest
+
+# https://docs.gitlab.com/ee/ci/docker/using_kaniko.html
+dockerize branch:
+    <<: *only_mr_manual
+    <<: *docker_build
+    dependencies:
+        - build
+    script:
+        - /kaniko/executor --context $CI_PROJECT_DIR --dockerfile $CI_PROJECT_DIR/Dockerfile --destination containers.oracledatacloud.com/baratheon/reaper:$CI_COMMIT_SHA
+
+dockerize master:
+    <<: *only_master
+    <<: *docker_build
+    dependencies:
+        - build bundle for test
+    script:
+        - /kaniko/executor --context $CI_PROJECT_DIR --dockerfile $CI_PROJECT_DIR/Dockerfile --destination containers.oracledatacloud.com/baratheon/reaper:$CI_COMMIT_SHA
+
+# https://docs.gitlab.com/ee/ci/docker/using_kaniko.html
+dockerize release:
+    <<: *only_prod_publish
+    <<: *docker_build
+    dependencies:
+        - build bundle for prod
+        - publish npm
+    script:
+        - /kaniko/executor --context $CI_PROJECT_DIR --dockerfile $CI_PROJECT_DIR/Dockerfile --destination containers.oracledatacloud.com/baratheon/reaper:$(cat reaper_version.txt)
+
+# This template sets common things for doing a deployment to kubernetes
+# It expects jobs to contain the following variables:
+# - ENVIRONMENT: environment for the app (dev, test, stg, sandbox, prod), which will impact which k8s yaml to use and which namespace
+.deploy-job: &deployment
+    stage: deploy
+    image: containers.oracledatacloud.com/oracledatacloud.com/helmsman:v1.10.1-helm-v2.14.1-nonRoot
+    dependencies: []
+    cache: {}
+    tags: [us-phx-a, baratheon]
+    retry:
+        max: 2
+    environment:
+        name: $ENVIRONMENT
+        url: https://audiences-$ENVIRONMENT.bluekai.com
+    script:
+        - if [[ "$ENVIRONMENT" == "test" ]]; then NAMESPACE="test"; fi
+        - if [[ "$ENVIRONMENT" == "stg-iad" || "$ENVIRONMENT" == "stg-phx" ]]; then NAMESPACE="stg"; fi
+        - if [[ "$ENVIRONMENT" == "branch" ]]; then NAMESPACE="dev"; fi
+        - if [[ "$ENVIRONMENT" == "sandbox" ]]; then NAMESPACE="sandbox"; fi
+        # If this is a VERSION pipeline, then use the package version
+        - if [ -n "$VERSION" ]; then DOCKER_TAG=$(cat reaper_version.txt); else DOCKER_TAG=$CI_COMMIT_SHA; fi
+        - echo "Using image containers.oracledatacloud.com/baratheon/reaper:$DOCKER_TAG"
+        - echo "Will deploy this from template"
+        - helm template kubernetes -f kubernetes/$ENVIRONMENT.yaml --set image=containers.oracledatacloud.com/baratheon/reaper:$DOCKER_TAG
+        - helm template kubernetes -f kubernetes/$ENVIRONMENT.yaml --set image=containers.oracledatacloud.com/baratheon/reaper:$DOCKER_TAG | kubectl -n baratheon-$NAMESPACE apply -f -
+        - echo "Watching for successful rollout"
+        - kubectl -n baratheon-$NAMESPACE rollout status deployment/reaper-$NAMESPACE
+
+deploy branch:
+    <<: *only_mr_manual
+    stage: deploy
+    image: containers.oracledatacloud.com/oracledatacloud.com/helmsman:v1.10.1-helm-v2.14.1-nonRoot
+    tags: [us-iad-a, baratheon]
+    environment:
+        name: review/$CI_COMMIT_REF_SLUG
+        url: http://reaper-$CI_COMMIT_REF_SLUG.us-iad-a.k8s.oracledatacloud.com
+        on_stop: teardown branch deployment
+    variables:
+        ENVIRONMENT: branch
+    script:
+        - echo "Using image containers.oracledatacloud.com/baratheon/reaper:$CI_COMMIT_SHA"
+        - echo "Will deploy this from template"
+        - helm template kubernetes -f kubernetes/branch.yaml --set image=containers.oracledatacloud.com/baratheon/reaper:$CI_COMMIT_SHA --set name=reaper-$CI_COMMIT_REF_SLUG
+        - helm template kubernetes -f kubernetes/branch.yaml --set image=containers.oracledatacloud.com/baratheon/reaper:$CI_COMMIT_SHA --set name=reaper-$CI_COMMIT_REF_SLUG  | kubectl -n baratheon-dev apply -f -
+        - echo "Adding ingress"
+        - helm template kubernetes/ingresses -f kubernetes/ingresses/branch-iad.yaml --set host=reaper-$CI_COMMIT_REF_SLUG.us-iad-a.k8s.oracledatacloud.com --set name=reaper-$CI_COMMIT_REF_SLUG
+        - helm template kubernetes/ingresses -f kubernetes/ingresses/branch-iad.yaml --set host=reaper-$CI_COMMIT_REF_SLUG.us-iad-a.k8s.oracledatacloud.com --set name=reaper-$CI_COMMIT_REF_SLUG | kubectl -n baratheon-dev apply -f -
+
+# This job will remove the branch deployment, but only run manually
+teardown branch deployment:
+    <<: *only_mr_manual
+    stage: deploy
+    image: containers.oracledatacloud.com/oracledatacloud.com/helmsman:v1.10.1-helm-v2.14.1-nonRoot
+    tags: [us-iad-a, baratheon]
+    variables:
+        GIT_STRATEGY: none
+    environment:
+        name: review/$CI_COMMIT_REF_SLUG
+        action: stop
+    script:
+        - echo "Removing app"
+        - kubectl -n baratheon-dev delete deploy,ing,service,prometheusrules reaper-$CI_COMMIT_REF_SLUG
+
+deploy test:
+    <<: *only_master
+    <<: *deployment
+    tags: [us-iad-a, baratheon]
+    variables:
+        ENVIRONMENT: test
+
+deploy IAD stg:
+  <<: *only_publishable_manual
+  <<: *deployment
+  tags: [us-iad-a, baratheon]
+  dependencies:
+    - publish npm
+  environment:
+    name: stg
+    url: https://audiences-stg-oiada.bluekai.com
+  variables:
+    ENVIRONMENT: stg-iad
+
+deploy PHX stg:
+  <<: *only_publishable_manual
+  <<: *deployment
+  dependencies:
+    - publish npm
+  environment:
+    name: stg
+    url: https://audiences-stg-ophxa.bluekai.com
+  variables:
+    ENVIRONMENT: stg-phx
+
+deploy IAD prod:
+    <<: *only_prod_publish
+    <<: *deployment
+    tags: [us-iad-a, baratheon]
+    dependencies:
+        - publish npm
+    environment:
+        name: prod-iad-oci
+        url: https://audiences-oiada.bluekai.com
+    script:
+        - echo Using image containers.oracledatacloud.com/baratheon/reaper:$(cat reaper_version.txt)
+        - echo Will deploy this from template
+        - helm template kubernetes -f kubernetes/prod-iad.yaml --set image=containers.oracledatacloud.com/baratheon/reaper:$(cat reaper_version.txt)
+        - helm template kubernetes -f kubernetes/prod-iad.yaml --set image=containers.oracledatacloud.com/baratheon/reaper:$(cat reaper_version.txt) | kubectl -n baratheon-prod apply -f -
+        - echo "Watching for successful rollout"
+        - kubectl -n baratheon-prod rollout status deployment/reaper
+    after_script:
+        - 'curl $SLACK_WEBHOOK_URL -d "{\"text\": \"$GITLAB_USER_NAME pushed Reaper $(cat reaper_version.txt) to production in IAD OCI! :scotch::dancingpanda:\"}"'
+        - 'curl $SLACK_WEBHOOK_URL -d "{\"text\": \"$GITLAB_USER_NAME pushed Reaper $(cat reaper_version.txt) to production in IAD OCI\"}"'
+
+deploy PHX prod:
+    <<: *only_prod_publish
+    <<: *deployment
+    dependencies:
+        - publish npm
+    environment:
+        name: prod-phx-oci
+        url: https://audiences-ophxa.bluekai.com
+    script:
+        - echo Using image containers.oracledatacloud.com/baratheon/reaper:$(cat reaper_version.txt)
+        - echo Will deploy this from template
+        - helm template kubernetes -f kubernetes/prod-phx.yaml --set image=containers.oracledatacloud.com/baratheon/reaper:$(cat reaper_version.txt)
+        - helm template kubernetes -f kubernetes/prod-phx.yaml --set image=containers.oracledatacloud.com/baratheon/reaper:$(cat reaper_version.txt) | kubectl -n baratheon-prod apply -f -
+        - echo "Watching for successful rollout"
+        - kubectl -n baratheon-prod rollout status deployment/reaper
+    after_script:
+        - 'curl $SLACK_WEBHOOK_URL -d "{\"text\": \"$GITLAB_USER_NAME pushed Reaper $(cat reaper_version.txt) to production in PHX OCI! :scotch::dancingpanda:\"}"'
+        - 'curl $SLACK_WEBHOOK_URL -d "{\"text\": \"$GITLAB_USER_NAME pushed Reaper $(cat reaper_version.txt) to production in PHX OCI\"}"'
+
+deploy PHX sandbox:
+    <<: *only_prod_publish
+    <<: *deployment
+    dependencies:
+        - publish npm
+    variables:
+        ENVIRONMENT: sandbox
+
+build e2e tests:
+    stage: build_e2e
+    tags: [odc-common-build]
+    rules:
+      - if: $E2E_ENVIRONMENT 
+      - if: $VERSION
+    script:
+        - node ./bin/build_e2e_jobs.js
+        - cat .gitlab-ci.e2e-jobs.yml
+    artifacts:
+        paths:
+        - .gitlab-ci.e2e-jobs.yml
+
+e2e_test_trigger:
+    stage: e2e
+    rules:
+      - if: $E2E_ENVIRONMENT
+      - if: $VERSION
+    trigger:
+        include:
+          - artifact: .gitlab-ci.e2e-jobs.yml
+            job: build e2e tests
+        strategy: depend # this will block continuing in the pipeline until this finishes
+
+# This job will build a prod branch when a release is made from master.
+# This prod branch will be named `prod/VERSION`, and is used for any hotfixes
+announce e2e success:
+    stage: post_e2e
+    tags: [odc-common-build]
+    cache:
+        <<: *cache_template
+    rules:
+        - if: $CI_COMMIT_BRANCH == "master" && $FROM_SCHEDULE
+    script:
+        # Capture the last commit and pipeline
+        - mkdir -p e2e_refs
+        - echo "$CI_COMMIT_SHA" > e2e_refs/lastcommit
+        - echo "$CI_PIPELINE_ID" > e2e_refs/lastpipeline
+        - RAN_TESTS=$(cat e2e_refs/ran_tests)
+        - 'if [ "$RAN_TESTS" == "yes" ]; then curl $SLACK_WEBHOOK_URL -d "{\"text\": \":panda_dance:Reaper e2e tests passing against $E2E_ENVIRONMENT! :pig-happy:\"}"; fi'
+
+# This job presents all badges as artifacts, available to Gitlab to show.
+badges:
+    stage: badges
+    tags: [odc-common-build]
+    rules:
+        - if: $CI_COMMIT_BRANCH == "master"
+    cache:
+        <<: *cache_template
+        policy: pull
+    script:
+        - echo 'Here are your badges my friend.'
+        - ls badges
+    artifacts:
+        expire_in: 1 month
+        paths: [badges]
