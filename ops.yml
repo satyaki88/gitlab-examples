@@ -1,0 +1,124 @@
+image: containers.oracledatacloud.com/oracledatacloud.com/helmsman:v1.10.1-helm-v2.14.1-nonRoot
+
+variables:
+  DOCKER_REGISTRY: containers.oracledatacloud.com
+  JAEGER_VERSION: 1.19.2
+
+verify templates:
+  stage: test
+  tags: [baratheon]
+  script:
+    - helm template apmserver
+    - helm template grafana/deployment -f grafana/deployment/us-iad-a.yaml
+    - helm template grafana/deployment -f grafana/deployment/us-phx-c.yaml
+    - helm template nginx-ingress -f nginx-ingress/prod-iad-a.yaml
+    - helm template nginx-ingress -f nginx-ingress/prod-phx-a.yaml
+    - helm template nginx-ingress -f nginx-ingress/test-iad-a.yaml
+    - helm template nginx-ingress -f nginx-ingress/test-phx-a.yaml
+    - helm template jaeger-opendistro 
+    - helm template jaeger-opendistro -f jaeger-opendistro/test.yaml
+    - helm template jaeger-opendistro -f jaeger-opendistro/prod.yaml
+
+
+###########################################
+##  Building and deploying docker image
+###########################################
+# Base docker build steps interface. Requires variables:
+# - DOCKERFILE_PATH: path to where the Dockerfile will be
+# - DOCKER_IMAGE: path to publish in the DOCKER_REGISTRY
+# - DOCKER_TAG: tag used on the published image
+.docker-build: &docker_build
+  stage: deploy
+  tags: [odc-docker-build]
+  image:
+    # We must use the debug version because it has the embedded shell, which we use in our script below
+    name: gcr.io/kaniko-project/executor:debug-v1.2.0
+    entrypoint: ['']
+  script:
+    - /kaniko/executor --context $DOCKERFILE_PATH --dockerfile $DOCKERFILE_PATH/Dockerfile --destination $DOCKER_REGISTRY/$DOCKER_IMAGE:$DOCKER_TAG --build-arg jaegerVersion=$JAEGER_VERSION
+
+
+dockerize jaeger agent:
+  <<: *docker_build
+  when: manual
+  variables:
+    DOCKERFILE_PATH: $CI_PROJECT_DIR/jaeger-opendistro/docker/jaeger-agent
+    DOCKER_IMAGE: baratheon/jaeger/jaeger-agent
+    DOCKER_TAG: $JAEGER_VERSION
+
+dockerize jaeger collector:
+  <<: *docker_build
+  when: manual
+  variables:
+    DOCKERFILE_PATH: $CI_PROJECT_DIR/jaeger-opendistro/docker/jaeger-collector
+    DOCKER_IMAGE: baratheon/jaeger/jaeger-collector
+    DOCKER_TAG: $JAEGER_VERSION
+
+dockerize jaeger query:
+  <<: *docker_build
+  when: manual
+  variables:
+    DOCKERFILE_PATH: $CI_PROJECT_DIR/jaeger-opendistro/docker/jaeger-query
+    DOCKER_IMAGE: baratheon/jaeger/jaeger-query
+    DOCKER_TAG: $JAEGER_VERSION
+
+###########################################
+##  Deployments
+###########################################
+.deploy-phx: &deploy_phx
+  stage: deploy
+  tags: [us-phx-c,baratheon]
+  when: manual
+  allow_failure: true
+  script:
+    - helm template $SERVICE -f $SERVICE/$ENV.yaml
+    - helm template $SERVICE -f $SERVICE/$ENV.yaml | kubectl -n $NAMESPACE apply -f -
+
+.deploy-iad: &deploy_iad
+  stage: deploy
+  tags: [us-iad-c,baratheon]
+  when: manual
+  allow_failure: true
+  script:
+    - helm template $SERVICE -f $SERVICE/$ENV.yaml
+    - helm template $SERVICE -f $SERVICE/$ENV.yaml | kubectl -n $NAMESPACE apply -f -
+
+.deploy-prometheus: &deploy_prometheus
+  stage: deploy
+  tags: [baratheon]
+  only:
+    refs:
+      - main
+    changes:
+      - prometheus/**/*
+      - .gitlab-ci.yml
+  script:
+    - for i in prometheus/deploy/scrape_configs/*.yaml; do echo $i; kubectl -n $NAMESPACE apply -f $i; done
+    - for i in prometheus/deploy/rules/*.yaml; do echo $i; kubectl -n $NAMESPACE apply -f $i; done
+
+deploy test jaeger phx:
+  <<: *deploy_phx
+  variables:
+    SERVICE: jaeger-opendistro
+    ENV: test
+    NAMESPACE: baratheon-test
+
+deploy test jaeger iad:
+  <<: *deploy_iad
+  variables:
+    SERVICE: jaeger-opendistro
+    ENV: test
+    NAMESPACE: baratheon-test
+
+deploy prod prometheus:
+  <<: *deploy_prometheus
+  variables:
+    ENV: prod
+    NAMESPACE: baratheon-prod
+
+deploy prod jaeger iad:
+  <<: *deploy_iad
+  variables:
+    SERVICE: jaeger-opendistro
+    ENV: prod
+    NAMESPACE: baratheon-prod
