@@ -1,0 +1,1949 @@
+{
+  "annotations": {
+    "list": [
+      {
+        "builtIn": 1,
+        "datasource": "-- Grafana --",
+        "enable": true,
+        "hide": true,
+        "iconColor": "rgba(0, 211, 255, 1)",
+        "name": "Annotations & Alerts",
+        "type": "dashboard"
+      }
+    ]
+  },
+  "description": "Elasticsearch JSON Parsing Errors",
+  "editable": true,
+  "gnetId": null,
+  "graphTooltip": 0,
+  "id": 763,
+  "iteration": 1621512967570,
+  "links": [],
+  "panels": [
+    {
+      "datasource": null,
+      "fieldConfig": {
+        "defaults": {},
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 2,
+        "w": 11,
+        "x": 0,
+        "y": 0
+      },
+      "id": 5,
+      "options": {
+        "content": "# AWS PROD LOGGING\n",
+        "mode": "markdown"
+      },
+      "pluginVersion": "7.5.4",
+      "timeFrom": null,
+      "timeShift": null,
+      "type": "text"
+    },
+    {
+      "aliasColors": {
+        "Parse Failure": "red",
+        "Parse Success": "light-blue"
+      },
+      "bars": false,
+      "dashLength": 10,
+      "dashes": false,
+      "datasource": "OD Elasticsearch AWS PRD Filebeat Logging",
+      "fieldConfig": {
+        "defaults": {},
+        "overrides": []
+      },
+      "fill": 1,
+      "fillGradient": 0,
+      "gridPos": {
+        "h": 7,
+        "w": 9,
+        "x": 0,
+        "y": 2
+      },
+      "hiddenSeries": false,
+      "id": 2,
+      "legend": {
+        "avg": false,
+        "current": false,
+        "max": false,
+        "min": false,
+        "show": true,
+        "total": true,
+        "values": true
+      },
+      "lines": true,
+      "linewidth": 1,
+      "nullPointMode": "null",
+      "options": {
+        "alertThreshold": true
+      },
+      "percentage": false,
+      "pluginVersion": "7.5.4",
+      "pointradius": 2,
+      "points": false,
+      "renderer": "flot",
+      "seriesOverrides": [],
+      "spaceLength": 10,
+      "stack": false,
+      "steppedLine": false,
+      "targets": [
+        {
+          "aggregation": "Last",
+          "alias": "Parse Failure",
+          "bucketAggs": [
+            {
+              "field": "@timestamp",
+              "id": "2",
+              "settings": {
+                "interval": "20m",
+                "min_doc_count": 0,
+                "trimEdges": 0
+              },
+              "type": "date_histogram"
+            }
+          ],
+          "decimals": 2,
+          "displayAliasType": "Warning / Critical",
+          "displayType": "Regular",
+          "displayValueWithAlias": "Never",
+          "metrics": [
+            {
+              "field": "select field",
+              "id": "1",
+              "meta": {},
+              "settings": {},
+              "type": "count"
+            }
+          ],
+          "query": "(\"WARN\t[elasticsearch]\" AND \"Cannot index event publisher.Event\" AND stream: \"stderr\" AND message: \"namespace: {$customerName}\")",
+          "refId": "A",
+          "timeField": "@timestamp",
+          "units": "none",
+          "valueHandler": "Number Threshold"
+        },
+        {
+          "alias": "Parse Success",
+          "bucketAggs": [
+            {
+              "field": "@timestamp",
+              "id": "2",
+              "settings": {
+                "interval": "20m",
+                "min_doc_count": 0,
+                "trimEdges": 0
+              },
+              "type": "date_histogram"
+            }
+          ],
+          "metrics": [
+            {
+              "field": "select field",
+              "id": "1",
+              "type": "count"
+            }
+          ],
+          "query": "_exists_: \"json\" AND odc_customer: \"${customerName}\"",
+          "refId": "B",
+          "timeField": "@timestamp"
+        }
+      ],
+      "thresholds": [],
+      "timeFrom": null,
+      "timeRegions": [],
+      "timeShift": null,
+      "title": "EKS PROD: Parse Success vs Parse Failure",
+      "tooltip": {
+        "shared": true,
+        "sort": 0,
+        "value_type": "individual"
+      },
+      "transformations": [
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {
+              "@timestamp": false,
+              "_id": true,
+              "_index": true,
+              "_type": true,
+              "agent.ephemeral_id": true,
+              "agent.hostname": true,
+              "agent.id": true,
+              "agent.name": true,
+              "agent.type": true,
+              "agent.version": true,
+              "ecs.version": true,
+              "host.name": true,
+              "input.type": true,
+              "kubernetes.container.image": true,
+              "kubernetes.container.name": true,
+              "kubernetes.labels.app": true,
+              "kubernetes.labels.app_kubernetes_io/instance": true,
+              "kubernetes.labels.app_kubernetes_io/name": true,
+              "kubernetes.labels.appsecret": true,
+              "kubernetes.labels.chart": true,
+              "kubernetes.labels.controller-revision-hash": true,
+              "kubernetes.labels.controller-uid": true,
+              "kubernetes.labels.env": true,
+              "kubernetes.labels.heritage": true,
+              "kubernetes.labels.job-name": true,
+              "kubernetes.labels.pod-template-generation": true,
+              "kubernetes.labels.pod-template-hash": true,
+              "kubernetes.labels.product": true,
+              "kubernetes.labels.release": true,
+              "kubernetes.labels.source": true,
+              "kubernetes.labels.target": true,
+              "kubernetes.namespace": true,
+              "kubernetes.node.name": true,
+              "kubernetes.pod.name": true,
+              "kubernetes.pod.uid": true,
+              "kubernetes.replicaset.name": true,
+              "log.file.path": true,
+              "log.offset": true,
+              "message": false,
+              "odc_customer": true,
+              "odc_env": true,
+              "stream": true
+            },
+            "indexByName": {
+              "@timestamp": 0,
+              "_id": 1,
+              "_index": 2,
+              "_type": 3,
+              "agent.ephemeral_id": 4,
+              "agent.hostname": 5,
+              "agent.id": 6,
+              "agent.name": 7,
+              "agent.type": 8,
+              "agent.version": 9,
+              "ecs.version": 10,
+              "host.name": 11,
+              "input.type": 12,
+              "kubernetes.container.image": 13,
+              "kubernetes.container.name": 14,
+              "kubernetes.labels.app": 15,
+              "kubernetes.labels.app_kubernetes_io/instance": 16,
+              "kubernetes.labels.app_kubernetes_io/name": 17,
+              "kubernetes.labels.controller-revision-hash": 18,
+              "kubernetes.labels.pod-template-generation": 19,
+              "kubernetes.labels.pod-template-hash": 20,
+              "kubernetes.labels.release": 21,
+              "kubernetes.namespace": 22,
+              "kubernetes.node.name": 23,
+              "kubernetes.pod.name": 24,
+              "kubernetes.pod.uid": 25,
+              "kubernetes.replicaset.name": 26,
+              "log.file.path": 27,
+              "log.offset": 28,
+              "message": 29,
+              "odc_customer": 30,
+              "odc_env": 31,
+              "stream": 32
+            },
+            "renameByName": {}
+          }
+        }
+      ],
+      "type": "graph",
+      "xaxis": {
+        "buckets": null,
+        "mode": "time",
+        "name": null,
+        "show": true,
+        "values": []
+      },
+      "yaxes": [
+        {
+          "format": "short",
+          "label": null,
+          "logBase": 1,
+          "max": null,
+          "min": null,
+          "show": true
+        },
+        {
+          "format": "short",
+          "label": null,
+          "logBase": 1,
+          "max": null,
+          "min": null,
+          "show": true
+        }
+      ],
+      "yaxis": {
+        "align": false,
+        "alignLevel": null
+      }
+    },
+    {
+      "datasource": "OD Elasticsearch AWS PRD Filebeat Logging",
+      "fieldConfig": {
+        "defaults": {},
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 7,
+        "w": 14,
+        "x": 9,
+        "y": 2
+      },
+      "id": 3,
+      "options": {
+        "dedupStrategy": "none",
+        "showLabels": false,
+        "showTime": false,
+        "sortOrder": "Descending",
+        "wrapLogMessage": false
+      },
+      "pluginVersion": "7.2.1",
+      "targets": [
+        {
+          "bucketAggs": [],
+          "metrics": [
+            {
+              "field": "select field",
+              "id": "1",
+              "meta": {},
+              "settings": {
+                "size": 500
+              },
+              "type": "raw_data"
+            }
+          ],
+          "query": "\"WARN\t[elasticsearch]\" AND \"Cannot index event publisher.Event\" AND stream: \"stderr\" AND message: \"namespace: {$customerName}\"",
+          "refId": "A",
+          "timeField": "@timestamp"
+        }
+      ],
+      "timeFrom": null,
+      "timeShift": null,
+      "title": "AWS PROD Publish Event Warnings",
+      "transformations": [
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {
+              "@timestamp": false,
+              "_id": true,
+              "_index": true,
+              "_type": true,
+              "agent.ephemeral_id": true,
+              "agent.hostname": true,
+              "agent.id": true,
+              "agent.name": true,
+              "agent.type": true,
+              "agent.version": true,
+              "ecs.version": true,
+              "host.name": true,
+              "input.type": true,
+              "kubernetes.container.image": true,
+              "kubernetes.container.name": true,
+              "kubernetes.labels.app": true,
+              "kubernetes.labels.app_kubernetes_io/instance": true,
+              "kubernetes.labels.app_kubernetes_io/name": true,
+              "kubernetes.labels.appsecret": true,
+              "kubernetes.labels.chart": true,
+              "kubernetes.labels.controller-revision-hash": true,
+              "kubernetes.labels.controller-uid": true,
+              "kubernetes.labels.env": true,
+              "kubernetes.labels.heritage": true,
+              "kubernetes.labels.job-name": true,
+              "kubernetes.labels.pod-template-generation": true,
+              "kubernetes.labels.pod-template-hash": true,
+              "kubernetes.labels.product": true,
+              "kubernetes.labels.release": true,
+              "kubernetes.labels.source": true,
+              "kubernetes.labels.target": true,
+              "kubernetes.namespace": true,
+              "kubernetes.node.name": true,
+              "kubernetes.pod.name": true,
+              "kubernetes.pod.uid": true,
+              "kubernetes.replicaset.name": true,
+              "log.file.path": true,
+              "log.offset": true,
+              "message": false,
+              "odc_customer": true,
+              "odc_env": true,
+              "stream": true
+            },
+            "indexByName": {
+              "@timestamp": 0,
+              "_id": 1,
+              "_index": 2,
+              "_type": 3,
+              "agent.ephemeral_id": 4,
+              "agent.hostname": 5,
+              "agent.id": 6,
+              "agent.name": 7,
+              "agent.type": 8,
+              "agent.version": 9,
+              "ecs.version": 10,
+              "host.name": 11,
+              "input.type": 12,
+              "kubernetes.container.image": 13,
+              "kubernetes.container.name": 14,
+              "kubernetes.labels.app": 15,
+              "kubernetes.labels.app_kubernetes_io/instance": 16,
+              "kubernetes.labels.app_kubernetes_io/name": 17,
+              "kubernetes.labels.controller-revision-hash": 18,
+              "kubernetes.labels.pod-template-generation": 19,
+              "kubernetes.labels.pod-template-hash": 20,
+              "kubernetes.labels.release": 21,
+              "kubernetes.namespace": 22,
+              "kubernetes.node.name": 23,
+              "kubernetes.pod.name": 24,
+              "kubernetes.pod.uid": 25,
+              "kubernetes.replicaset.name": 26,
+              "log.file.path": 27,
+              "log.offset": 28,
+              "message": 29,
+              "odc_customer": 30,
+              "odc_env": 31,
+              "stream": 32
+            },
+            "renameByName": {}
+          }
+        }
+      ],
+      "type": "logs"
+    },
+    {
+      "aliasColors": {},
+      "bars": false,
+      "dashLength": 10,
+      "dashes": false,
+      "datasource": "OD Elasticsearch AWS PRD Filebeat Logging",
+      "fieldConfig": {
+        "defaults": {},
+        "overrides": []
+      },
+      "fill": 1,
+      "fillGradient": 0,
+      "gridPos": {
+        "h": 6,
+        "w": 23,
+        "x": 0,
+        "y": 9
+      },
+      "hiddenSeries": false,
+      "id": 7,
+      "legend": {
+        "avg": false,
+        "current": false,
+        "max": false,
+        "min": false,
+        "show": true,
+        "total": false,
+        "values": false
+      },
+      "lines": true,
+      "linewidth": 1,
+      "nullPointMode": "null",
+      "options": {
+        "alertThreshold": true
+      },
+      "percentage": false,
+      "pluginVersion": "7.5.4",
+      "pointradius": 2,
+      "points": false,
+      "renderer": "flot",
+      "seriesOverrides": [],
+      "spaceLength": 10,
+      "stack": false,
+      "steppedLine": false,
+      "targets": [
+        {
+          "bucketAggs": [
+            {
+              "field": "@timestamp",
+              "id": "2",
+              "settings": {
+                "interval": "auto",
+                "min_doc_count": 0,
+                "trimEdges": 0
+              },
+              "type": "date_histogram"
+            }
+          ],
+          "metrics": [
+            {
+              "field": "select field",
+              "id": "1",
+              "meta": {},
+              "settings": {},
+              "type": "count"
+            }
+          ],
+          "query": "\"WARN\t[elasticsearch]\" AND \"Cannot index event publisher.Event\" AND stream: \"stderr\"",
+          "refId": "A",
+          "timeField": "@timestamp"
+        }
+      ],
+      "thresholds": [],
+      "timeFrom": null,
+      "timeRegions": [],
+      "timeShift": null,
+      "title": "AWS PROD Publish Event Warnings Total Count (All Teams)",
+      "tooltip": {
+        "shared": true,
+        "sort": 0,
+        "value_type": "individual"
+      },
+      "transformations": [],
+      "type": "graph",
+      "xaxis": {
+        "buckets": null,
+        "mode": "time",
+        "name": null,
+        "show": true,
+        "values": []
+      },
+      "yaxes": [
+        {
+          "format": "short",
+          "label": null,
+          "logBase": 1,
+          "max": null,
+          "min": null,
+          "show": true
+        },
+        {
+          "format": "short",
+          "label": null,
+          "logBase": 1,
+          "max": null,
+          "min": null,
+          "show": true
+        }
+      ],
+      "yaxis": {
+        "align": false,
+        "alignLevel": null
+      }
+    },
+    {
+      "datasource": null,
+      "fieldConfig": {
+        "defaults": {},
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 2,
+        "w": 11,
+        "x": 0,
+        "y": 15
+      },
+      "id": 8,
+      "options": {
+        "content": "# AWS DEV LOGGING\n",
+        "mode": "markdown"
+      },
+      "pluginVersion": "7.5.4",
+      "timeFrom": null,
+      "timeShift": null,
+      "type": "text"
+    },
+    {
+      "aliasColors": {
+        "Parse Failure": "red",
+        "Parse Success": "light-blue"
+      },
+      "bars": false,
+      "dashLength": 10,
+      "dashes": false,
+      "datasource": "OD Elasticsearch AWS DEV Filebeat Logging",
+      "fieldConfig": {
+        "defaults": {},
+        "overrides": []
+      },
+      "fill": 1,
+      "fillGradient": 0,
+      "gridPos": {
+        "h": 7,
+        "w": 9,
+        "x": 0,
+        "y": 17
+      },
+      "hiddenSeries": false,
+      "id": 10,
+      "legend": {
+        "avg": false,
+        "current": false,
+        "max": false,
+        "min": false,
+        "show": true,
+        "total": true,
+        "values": true
+      },
+      "lines": true,
+      "linewidth": 1,
+      "nullPointMode": "null",
+      "options": {
+        "alertThreshold": true
+      },
+      "percentage": false,
+      "pluginVersion": "7.5.4",
+      "pointradius": 2,
+      "points": false,
+      "renderer": "flot",
+      "seriesOverrides": [],
+      "spaceLength": 10,
+      "stack": false,
+      "steppedLine": false,
+      "targets": [
+        {
+          "aggregation": "Last",
+          "alias": "Parse Failure",
+          "bucketAggs": [
+            {
+              "field": "@timestamp",
+              "id": "2",
+              "settings": {
+                "interval": "20m",
+                "min_doc_count": 0,
+                "trimEdges": 0
+              },
+              "type": "date_histogram"
+            }
+          ],
+          "decimals": 2,
+          "displayAliasType": "Warning / Critical",
+          "displayType": "Regular",
+          "displayValueWithAlias": "Never",
+          "metrics": [
+            {
+              "field": "select field",
+              "id": "1",
+              "meta": {},
+              "settings": {},
+              "type": "count"
+            }
+          ],
+          "query": "(\"WARN\t[elasticsearch]\" AND \"Cannot index event publisher.Event\" AND stream: \"stderr\" AND message: \"namespace: {$customerName}\")",
+          "refId": "A",
+          "timeField": "@timestamp",
+          "units": "none",
+          "valueHandler": "Number Threshold"
+        },
+        {
+          "alias": "Parse Success",
+          "bucketAggs": [
+            {
+              "field": "@timestamp",
+              "id": "2",
+              "settings": {
+                "interval": "20m",
+                "min_doc_count": 0,
+                "trimEdges": 0
+              },
+              "type": "date_histogram"
+            }
+          ],
+          "metrics": [
+            {
+              "field": "select field",
+              "id": "1",
+              "type": "count"
+            }
+          ],
+          "query": "_exists_: \"json\" AND odc_customer: \"${customerName}\"",
+          "refId": "B",
+          "timeField": "@timestamp"
+        }
+      ],
+      "thresholds": [],
+      "timeFrom": null,
+      "timeRegions": [],
+      "timeShift": null,
+      "title": "EKS DEV: Parse Success vs Parse Failure",
+      "tooltip": {
+        "shared": true,
+        "sort": 0,
+        "value_type": "individual"
+      },
+      "transformations": [
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {
+              "@timestamp": false,
+              "_id": true,
+              "_index": true,
+              "_type": true,
+              "agent.ephemeral_id": true,
+              "agent.hostname": true,
+              "agent.id": true,
+              "agent.name": true,
+              "agent.type": true,
+              "agent.version": true,
+              "ecs.version": true,
+              "host.name": true,
+              "input.type": true,
+              "kubernetes.container.image": true,
+              "kubernetes.container.name": true,
+              "kubernetes.labels.app": true,
+              "kubernetes.labels.app_kubernetes_io/instance": true,
+              "kubernetes.labels.app_kubernetes_io/name": true,
+              "kubernetes.labels.appsecret": true,
+              "kubernetes.labels.chart": true,
+              "kubernetes.labels.controller-revision-hash": true,
+              "kubernetes.labels.controller-uid": true,
+              "kubernetes.labels.env": true,
+              "kubernetes.labels.heritage": true,
+              "kubernetes.labels.job-name": true,
+              "kubernetes.labels.pod-template-generation": true,
+              "kubernetes.labels.pod-template-hash": true,
+              "kubernetes.labels.product": true,
+              "kubernetes.labels.release": true,
+              "kubernetes.labels.source": true,
+              "kubernetes.labels.target": true,
+              "kubernetes.namespace": true,
+              "kubernetes.node.name": true,
+              "kubernetes.pod.name": true,
+              "kubernetes.pod.uid": true,
+              "kubernetes.replicaset.name": true,
+              "log.file.path": true,
+              "log.offset": true,
+              "message": false,
+              "odc_customer": true,
+              "odc_env": true,
+              "stream": true
+            },
+            "indexByName": {
+              "@timestamp": 0,
+              "_id": 1,
+              "_index": 2,
+              "_type": 3,
+              "agent.ephemeral_id": 4,
+              "agent.hostname": 5,
+              "agent.id": 6,
+              "agent.name": 7,
+              "agent.type": 8,
+              "agent.version": 9,
+              "ecs.version": 10,
+              "host.name": 11,
+              "input.type": 12,
+              "kubernetes.container.image": 13,
+              "kubernetes.container.name": 14,
+              "kubernetes.labels.app": 15,
+              "kubernetes.labels.app_kubernetes_io/instance": 16,
+              "kubernetes.labels.app_kubernetes_io/name": 17,
+              "kubernetes.labels.controller-revision-hash": 18,
+              "kubernetes.labels.pod-template-generation": 19,
+              "kubernetes.labels.pod-template-hash": 20,
+              "kubernetes.labels.release": 21,
+              "kubernetes.namespace": 22,
+              "kubernetes.node.name": 23,
+              "kubernetes.pod.name": 24,
+              "kubernetes.pod.uid": 25,
+              "kubernetes.replicaset.name": 26,
+              "log.file.path": 27,
+              "log.offset": 28,
+              "message": 29,
+              "odc_customer": 30,
+              "odc_env": 31,
+              "stream": 32
+            },
+            "renameByName": {}
+          }
+        }
+      ],
+      "type": "graph",
+      "xaxis": {
+        "buckets": null,
+        "mode": "time",
+        "name": null,
+        "show": true,
+        "values": []
+      },
+      "yaxes": [
+        {
+          "format": "short",
+          "label": null,
+          "logBase": 1,
+          "max": null,
+          "min": null,
+          "show": true
+        },
+        {
+          "format": "short",
+          "label": null,
+          "logBase": 1,
+          "max": null,
+          "min": null,
+          "show": true
+        }
+      ],
+      "yaxis": {
+        "align": false,
+        "alignLevel": null
+      }
+    },
+    {
+      "datasource": "OD Elasticsearch AWS DEV Filebeat Logging",
+      "fieldConfig": {
+        "defaults": {},
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 7,
+        "w": 14,
+        "x": 9,
+        "y": 17
+      },
+      "id": 11,
+      "options": {
+        "dedupStrategy": "none",
+        "showLabels": false,
+        "showTime": false,
+        "sortOrder": "Descending",
+        "wrapLogMessage": false
+      },
+      "pluginVersion": "7.2.1",
+      "targets": [
+        {
+          "bucketAggs": [],
+          "metrics": [
+            {
+              "field": "select field",
+              "id": "1",
+              "meta": {},
+              "settings": {
+                "size": 500
+              },
+              "type": "raw_data"
+            }
+          ],
+          "query": "\"WARN\t[elasticsearch]\" AND \"Cannot index event publisher.Event\" AND stream: \"stderr\" AND message: \"namespace: {$customerName}\"",
+          "refId": "A",
+          "timeField": "@timestamp"
+        }
+      ],
+      "timeFrom": null,
+      "timeShift": null,
+      "title": "AWS DEV Publish Event Warnings",
+      "transformations": [
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {
+              "@timestamp": false,
+              "_id": true,
+              "_index": true,
+              "_type": true,
+              "agent.ephemeral_id": true,
+              "agent.hostname": true,
+              "agent.id": true,
+              "agent.name": true,
+              "agent.type": true,
+              "agent.version": true,
+              "ecs.version": true,
+              "host.name": true,
+              "input.type": true,
+              "kubernetes.container.image": true,
+              "kubernetes.container.name": true,
+              "kubernetes.labels.app": true,
+              "kubernetes.labels.app_kubernetes_io/instance": true,
+              "kubernetes.labels.app_kubernetes_io/name": true,
+              "kubernetes.labels.appsecret": true,
+              "kubernetes.labels.chart": true,
+              "kubernetes.labels.controller-revision-hash": true,
+              "kubernetes.labels.controller-uid": true,
+              "kubernetes.labels.env": true,
+              "kubernetes.labels.heritage": true,
+              "kubernetes.labels.job-name": true,
+              "kubernetes.labels.pod-template-generation": true,
+              "kubernetes.labels.pod-template-hash": true,
+              "kubernetes.labels.product": true,
+              "kubernetes.labels.release": true,
+              "kubernetes.labels.source": true,
+              "kubernetes.labels.target": true,
+              "kubernetes.namespace": true,
+              "kubernetes.node.name": true,
+              "kubernetes.pod.name": true,
+              "kubernetes.pod.uid": true,
+              "kubernetes.replicaset.name": true,
+              "log.file.path": true,
+              "log.offset": true,
+              "message": false,
+              "odc_customer": true,
+              "odc_env": true,
+              "stream": true
+            },
+            "indexByName": {
+              "@timestamp": 0,
+              "_id": 1,
+              "_index": 2,
+              "_type": 3,
+              "agent.ephemeral_id": 4,
+              "agent.hostname": 5,
+              "agent.id": 6,
+              "agent.name": 7,
+              "agent.type": 8,
+              "agent.version": 9,
+              "ecs.version": 10,
+              "host.name": 11,
+              "input.type": 12,
+              "kubernetes.container.image": 13,
+              "kubernetes.container.name": 14,
+              "kubernetes.labels.app": 15,
+              "kubernetes.labels.app_kubernetes_io/instance": 16,
+              "kubernetes.labels.app_kubernetes_io/name": 17,
+              "kubernetes.labels.controller-revision-hash": 18,
+              "kubernetes.labels.pod-template-generation": 19,
+              "kubernetes.labels.pod-template-hash": 20,
+              "kubernetes.labels.release": 21,
+              "kubernetes.namespace": 22,
+              "kubernetes.node.name": 23,
+              "kubernetes.pod.name": 24,
+              "kubernetes.pod.uid": 25,
+              "kubernetes.replicaset.name": 26,
+              "log.file.path": 27,
+              "log.offset": 28,
+              "message": 29,
+              "odc_customer": 30,
+              "odc_env": 31,
+              "stream": 32
+            },
+            "renameByName": {}
+          }
+        }
+      ],
+      "type": "logs"
+    },
+    {
+      "aliasColors": {},
+      "bars": false,
+      "dashLength": 10,
+      "dashes": false,
+      "datasource": "OD Elasticsearch AWS DEV Filebeat Logging",
+      "fieldConfig": {
+        "defaults": {},
+        "overrides": []
+      },
+      "fill": 1,
+      "fillGradient": 0,
+      "gridPos": {
+        "h": 6,
+        "w": 23,
+        "x": 0,
+        "y": 24
+      },
+      "hiddenSeries": false,
+      "id": 13,
+      "legend": {
+        "avg": false,
+        "current": false,
+        "max": false,
+        "min": false,
+        "show": true,
+        "total": false,
+        "values": false
+      },
+      "lines": true,
+      "linewidth": 1,
+      "nullPointMode": "null",
+      "options": {
+        "alertThreshold": true
+      },
+      "percentage": false,
+      "pluginVersion": "7.5.4",
+      "pointradius": 2,
+      "points": false,
+      "renderer": "flot",
+      "seriesOverrides": [],
+      "spaceLength": 10,
+      "stack": false,
+      "steppedLine": false,
+      "targets": [
+        {
+          "bucketAggs": [
+            {
+              "field": "@timestamp",
+              "id": "2",
+              "settings": {
+                "interval": "auto",
+                "min_doc_count": 0,
+                "trimEdges": 0
+              },
+              "type": "date_histogram"
+            }
+          ],
+          "metrics": [
+            {
+              "field": "select field",
+              "id": "1",
+              "meta": {},
+              "settings": {},
+              "type": "count"
+            }
+          ],
+          "query": "\"WARN\t[elasticsearch]\" AND \"Cannot index event publisher.Event\" AND stream: \"stderr\"",
+          "refId": "A",
+          "timeField": "@timestamp"
+        }
+      ],
+      "thresholds": [],
+      "timeFrom": null,
+      "timeRegions": [],
+      "timeShift": null,
+      "title": "AWS DEV Publish Event Warnings Total Count (All Teams)",
+      "tooltip": {
+        "shared": true,
+        "sort": 0,
+        "value_type": "individual"
+      },
+      "transformations": [],
+      "type": "graph",
+      "xaxis": {
+        "buckets": null,
+        "mode": "time",
+        "name": null,
+        "show": true,
+        "values": []
+      },
+      "yaxes": [
+        {
+          "format": "short",
+          "label": null,
+          "logBase": 1,
+          "max": null,
+          "min": null,
+          "show": true
+        },
+        {
+          "format": "short",
+          "label": null,
+          "logBase": 1,
+          "max": null,
+          "min": null,
+          "show": true
+        }
+      ],
+      "yaxis": {
+        "align": false,
+        "alignLevel": null
+      }
+    },
+    {
+      "datasource": null,
+      "fieldConfig": {
+        "defaults": {},
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 2,
+        "w": 11,
+        "x": 0,
+        "y": 30
+      },
+      "id": 12,
+      "options": {
+        "content": "# OCI US-PHX-C\n",
+        "mode": "markdown"
+      },
+      "pluginVersion": "7.5.4",
+      "timeFrom": null,
+      "timeShift": null,
+      "type": "text"
+    },
+    {
+      "aliasColors": {
+        "Parse Failure": "red",
+        "Parse Success": "light-blue"
+      },
+      "bars": false,
+      "dashLength": 10,
+      "dashes": false,
+      "datasource": "OD Elasticsearch OCI US-PHX-C",
+      "fieldConfig": {
+        "defaults": {},
+        "overrides": []
+      },
+      "fill": 1,
+      "fillGradient": 0,
+      "gridPos": {
+        "h": 7,
+        "w": 9,
+        "x": 0,
+        "y": 32
+      },
+      "hiddenSeries": false,
+      "id": 14,
+      "legend": {
+        "avg": false,
+        "current": false,
+        "max": false,
+        "min": false,
+        "show": true,
+        "total": true,
+        "values": true
+      },
+      "lines": true,
+      "linewidth": 1,
+      "nullPointMode": "null",
+      "options": {
+        "alertThreshold": true
+      },
+      "percentage": false,
+      "pluginVersion": "7.5.4",
+      "pointradius": 2,
+      "points": false,
+      "renderer": "flot",
+      "seriesOverrides": [],
+      "spaceLength": 10,
+      "stack": false,
+      "steppedLine": false,
+      "targets": [
+        {
+          "aggregation": "Last",
+          "alias": "Parse Failure",
+          "bucketAggs": [
+            {
+              "field": "@timestamp",
+              "id": "2",
+              "settings": {
+                "interval": "20m",
+                "min_doc_count": 0,
+                "trimEdges": 0
+              },
+              "type": "date_histogram"
+            }
+          ],
+          "decimals": 2,
+          "displayAliasType": "Warning / Critical",
+          "displayType": "Regular",
+          "displayValueWithAlias": "Never",
+          "metrics": [
+            {
+              "field": "select field",
+              "id": "1",
+              "meta": {},
+              "settings": {},
+              "type": "count"
+            }
+          ],
+          "query": "(\"WARN\t[elasticsearch]\" AND \"Cannot index event publisher.Event\" AND stream: \"stderr\" AND message: \"namespace: {$customerName}\")",
+          "refId": "A",
+          "timeField": "@timestamp",
+          "units": "none",
+          "valueHandler": "Number Threshold"
+        },
+        {
+          "alias": "Parse Success",
+          "bucketAggs": [
+            {
+              "field": "@timestamp",
+              "id": "2",
+              "settings": {
+                "interval": "20m",
+                "min_doc_count": 0,
+                "trimEdges": 0
+              },
+              "type": "date_histogram"
+            }
+          ],
+          "metrics": [
+            {
+              "field": "select field",
+              "id": "1",
+              "type": "count"
+            }
+          ],
+          "query": "_exists_: \"json\" AND odc_customer: \"${customerName}\"",
+          "refId": "B",
+          "timeField": "@timestamp"
+        }
+      ],
+      "thresholds": [],
+      "timeFrom": null,
+      "timeRegions": [],
+      "timeShift": null,
+      "title": "OCI US-PHX-C: Parse Success vs Parse Failure",
+      "tooltip": {
+        "shared": true,
+        "sort": 0,
+        "value_type": "individual"
+      },
+      "transformations": [
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {
+              "@timestamp": false,
+              "_id": true,
+              "_index": true,
+              "_type": true,
+              "agent.ephemeral_id": true,
+              "agent.hostname": true,
+              "agent.id": true,
+              "agent.name": true,
+              "agent.type": true,
+              "agent.version": true,
+              "ecs.version": true,
+              "host.name": true,
+              "input.type": true,
+              "kubernetes.container.image": true,
+              "kubernetes.container.name": true,
+              "kubernetes.labels.app": true,
+              "kubernetes.labels.app_kubernetes_io/instance": true,
+              "kubernetes.labels.app_kubernetes_io/name": true,
+              "kubernetes.labels.appsecret": true,
+              "kubernetes.labels.chart": true,
+              "kubernetes.labels.controller-revision-hash": true,
+              "kubernetes.labels.controller-uid": true,
+              "kubernetes.labels.env": true,
+              "kubernetes.labels.heritage": true,
+              "kubernetes.labels.job-name": true,
+              "kubernetes.labels.pod-template-generation": true,
+              "kubernetes.labels.pod-template-hash": true,
+              "kubernetes.labels.product": true,
+              "kubernetes.labels.release": true,
+              "kubernetes.labels.source": true,
+              "kubernetes.labels.target": true,
+              "kubernetes.namespace": true,
+              "kubernetes.node.name": true,
+              "kubernetes.pod.name": true,
+              "kubernetes.pod.uid": true,
+              "kubernetes.replicaset.name": true,
+              "log.file.path": true,
+              "log.offset": true,
+              "message": false,
+              "odc_customer": true,
+              "odc_env": true,
+              "stream": true
+            },
+            "indexByName": {
+              "@timestamp": 0,
+              "_id": 1,
+              "_index": 2,
+              "_type": 3,
+              "agent.ephemeral_id": 4,
+              "agent.hostname": 5,
+              "agent.id": 6,
+              "agent.name": 7,
+              "agent.type": 8,
+              "agent.version": 9,
+              "ecs.version": 10,
+              "host.name": 11,
+              "input.type": 12,
+              "kubernetes.container.image": 13,
+              "kubernetes.container.name": 14,
+              "kubernetes.labels.app": 15,
+              "kubernetes.labels.app_kubernetes_io/instance": 16,
+              "kubernetes.labels.app_kubernetes_io/name": 17,
+              "kubernetes.labels.controller-revision-hash": 18,
+              "kubernetes.labels.pod-template-generation": 19,
+              "kubernetes.labels.pod-template-hash": 20,
+              "kubernetes.labels.release": 21,
+              "kubernetes.namespace": 22,
+              "kubernetes.node.name": 23,
+              "kubernetes.pod.name": 24,
+              "kubernetes.pod.uid": 25,
+              "kubernetes.replicaset.name": 26,
+              "log.file.path": 27,
+              "log.offset": 28,
+              "message": 29,
+              "odc_customer": 30,
+              "odc_env": 31,
+              "stream": 32
+            },
+            "renameByName": {}
+          }
+        }
+      ],
+      "type": "graph",
+      "xaxis": {
+        "buckets": null,
+        "mode": "time",
+        "name": null,
+        "show": true,
+        "values": []
+      },
+      "yaxes": [
+        {
+          "format": "short",
+          "label": null,
+          "logBase": 1,
+          "max": null,
+          "min": null,
+          "show": true
+        },
+        {
+          "format": "short",
+          "label": null,
+          "logBase": 1,
+          "max": null,
+          "min": null,
+          "show": true
+        }
+      ],
+      "yaxis": {
+        "align": false,
+        "alignLevel": null
+      }
+    },
+    {
+      "datasource": "OD Elasticsearch OCI US-PHX-C",
+      "fieldConfig": {
+        "defaults": {},
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 7,
+        "w": 14,
+        "x": 9,
+        "y": 32
+      },
+      "id": 15,
+      "options": {
+        "dedupStrategy": "none",
+        "showLabels": false,
+        "showTime": false,
+        "sortOrder": "Descending",
+        "wrapLogMessage": false
+      },
+      "pluginVersion": "7.2.1",
+      "targets": [
+        {
+          "bucketAggs": [],
+          "metrics": [
+            {
+              "field": "select field",
+              "id": "1",
+              "meta": {},
+              "settings": {
+                "size": 500
+              },
+              "type": "raw_data"
+            }
+          ],
+          "query": "\"WARN\t[elasticsearch]\" AND \"Cannot index event publisher.Event\" AND stream: \"stderr\" AND message: \"namespace: {$customerName}\"",
+          "refId": "A",
+          "timeField": "@timestamp"
+        }
+      ],
+      "timeFrom": null,
+      "timeShift": null,
+      "title": "OCI US-PHX-C Publish Event Warnings",
+      "transformations": [
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {
+              "@timestamp": false,
+              "_id": true,
+              "_index": true,
+              "_type": true,
+              "agent.ephemeral_id": true,
+              "agent.hostname": true,
+              "agent.id": true,
+              "agent.name": true,
+              "agent.type": true,
+              "agent.version": true,
+              "ecs.version": true,
+              "host.name": true,
+              "input.type": true,
+              "kubernetes.container.image": true,
+              "kubernetes.container.name": true,
+              "kubernetes.labels.app": true,
+              "kubernetes.labels.app_kubernetes_io/instance": true,
+              "kubernetes.labels.app_kubernetes_io/name": true,
+              "kubernetes.labels.appsecret": true,
+              "kubernetes.labels.chart": true,
+              "kubernetes.labels.controller-revision-hash": true,
+              "kubernetes.labels.controller-uid": true,
+              "kubernetes.labels.env": true,
+              "kubernetes.labels.heritage": true,
+              "kubernetes.labels.job-name": true,
+              "kubernetes.labels.pod-template-generation": true,
+              "kubernetes.labels.pod-template-hash": true,
+              "kubernetes.labels.product": true,
+              "kubernetes.labels.release": true,
+              "kubernetes.labels.source": true,
+              "kubernetes.labels.target": true,
+              "kubernetes.namespace": true,
+              "kubernetes.node.name": true,
+              "kubernetes.pod.name": true,
+              "kubernetes.pod.uid": true,
+              "kubernetes.replicaset.name": true,
+              "log.file.path": true,
+              "log.offset": true,
+              "message": false,
+              "odc_customer": true,
+              "odc_env": true,
+              "stream": true
+            },
+            "indexByName": {
+              "@timestamp": 0,
+              "_id": 1,
+              "_index": 2,
+              "_type": 3,
+              "agent.ephemeral_id": 4,
+              "agent.hostname": 5,
+              "agent.id": 6,
+              "agent.name": 7,
+              "agent.type": 8,
+              "agent.version": 9,
+              "ecs.version": 10,
+              "host.name": 11,
+              "input.type": 12,
+              "kubernetes.container.image": 13,
+              "kubernetes.container.name": 14,
+              "kubernetes.labels.app": 15,
+              "kubernetes.labels.app_kubernetes_io/instance": 16,
+              "kubernetes.labels.app_kubernetes_io/name": 17,
+              "kubernetes.labels.controller-revision-hash": 18,
+              "kubernetes.labels.pod-template-generation": 19,
+              "kubernetes.labels.pod-template-hash": 20,
+              "kubernetes.labels.release": 21,
+              "kubernetes.namespace": 22,
+              "kubernetes.node.name": 23,
+              "kubernetes.pod.name": 24,
+              "kubernetes.pod.uid": 25,
+              "kubernetes.replicaset.name": 26,
+              "log.file.path": 27,
+              "log.offset": 28,
+              "message": 29,
+              "odc_customer": 30,
+              "odc_env": 31,
+              "stream": 32
+            },
+            "renameByName": {}
+          }
+        }
+      ],
+      "type": "logs"
+    },
+    {
+      "aliasColors": {},
+      "bars": false,
+      "dashLength": 10,
+      "dashes": false,
+      "datasource": "OD Elasticsearch OCI US-PHX-C",
+      "fieldConfig": {
+        "defaults": {},
+        "overrides": []
+      },
+      "fill": 1,
+      "fillGradient": 0,
+      "gridPos": {
+        "h": 7,
+        "w": 23,
+        "x": 0,
+        "y": 39
+      },
+      "hiddenSeries": false,
+      "id": 9,
+      "legend": {
+        "avg": false,
+        "current": false,
+        "max": false,
+        "min": false,
+        "show": true,
+        "total": false,
+        "values": false
+      },
+      "lines": true,
+      "linewidth": 1,
+      "nullPointMode": "null",
+      "options": {
+        "alertThreshold": true
+      },
+      "percentage": false,
+      "pluginVersion": "7.5.4",
+      "pointradius": 2,
+      "points": false,
+      "renderer": "flot",
+      "seriesOverrides": [],
+      "spaceLength": 10,
+      "stack": false,
+      "steppedLine": false,
+      "targets": [
+        {
+          "bucketAggs": [
+            {
+              "field": "@timestamp",
+              "id": "2",
+              "settings": {
+                "interval": "auto",
+                "min_doc_count": 0,
+                "trimEdges": 0
+              },
+              "type": "date_histogram"
+            }
+          ],
+          "metrics": [
+            {
+              "field": "select field",
+              "id": "1",
+              "meta": {},
+              "settings": {},
+              "type": "count"
+            }
+          ],
+          "query": "\"WARN\t[elasticsearch]\" AND \"Cannot index event publisher.Event\" AND NOT kubernetes.pod.name: cluster-filebeat-audit* AND NOT kubernetes.pod.name: filebeat-audit*",
+          "refId": "A",
+          "timeField": "@timestamp"
+        }
+      ],
+      "thresholds": [],
+      "timeFrom": null,
+      "timeRegions": [],
+      "timeShift": null,
+      "title": "OCI US-PHX-C Publish Event Warnings Total Count (All Teams)",
+      "tooltip": {
+        "shared": true,
+        "sort": 0,
+        "value_type": "individual"
+      },
+      "transformations": [],
+      "type": "graph",
+      "xaxis": {
+        "buckets": null,
+        "mode": "time",
+        "name": null,
+        "show": true,
+        "values": []
+      },
+      "yaxes": [
+        {
+          "format": "short",
+          "label": null,
+          "logBase": 1,
+          "max": null,
+          "min": null,
+          "show": true
+        },
+        {
+          "format": "short",
+          "label": null,
+          "logBase": 1,
+          "max": null,
+          "min": null,
+          "show": true
+        }
+      ],
+      "yaxis": {
+        "align": false,
+        "alignLevel": null
+      }
+    }
+  ],
+  "refresh": false,
+  "schemaVersion": 27,
+  "style": "dark",
+  "tags": [],
+  "templating": {
+    "list": [
+      {
+        "allValue": null,
+        "current": {
+          "selected": true,
+          "text": "dmp",
+          "value": "dmp"
+        },
+        "description": null,
+        "error": null,
+        "hide": 0,
+        "includeAll": false,
+        "label": "Customer Name",
+        "multi": false,
+        "name": "customerName",
+        "options": [
+          {
+            "selected": false,
+            "text": "aaa",
+            "value": "aaa"
+          },
+          {
+            "selected": false,
+            "text": "aeads",
+            "value": "aeads"
+          },
+          {
+            "selected": false,
+            "text": "air",
+            "value": "air"
+          },
+          {
+            "selected": false,
+            "text": "analytair",
+            "value": "analytair"
+          },
+          {
+            "selected": false,
+            "text": "atlas",
+            "value": "atlas"
+          },
+          {
+            "selected": false,
+            "text": "audiencemodeling",
+            "value": "audiencemodeling"
+          },
+          {
+            "selected": false,
+            "text": "audienceplatform",
+            "value": "audienceplatform"
+          },
+          {
+            "selected": false,
+            "text": "audiencetooling",
+            "value": "audiencetooling"
+          },
+          {
+            "selected": false,
+            "text": "audplat",
+            "value": "audplat"
+          },
+          {
+            "selected": false,
+            "text": "ax",
+            "value": "ax"
+          },
+          {
+            "selected": false,
+            "text": "axidc",
+            "value": "axidc"
+          },
+          {
+            "selected": false,
+            "text": "baratheon",
+            "value": "baratheon"
+          },
+          {
+            "selected": false,
+            "text": "campaigndev",
+            "value": "campaigndev"
+          },
+          {
+            "selected": false,
+            "text": "campaignhub",
+            "value": "campaignhub"
+          },
+          {
+            "selected": false,
+            "text": "contextdevelopers",
+            "value": "contextdevelopers"
+          },
+          {
+            "selected": false,
+            "text": "contextsystem",
+            "value": "contextsystem"
+          },
+          {
+            "selected": false,
+            "text": "cookiedough",
+            "value": "cookiedough"
+          },
+          {
+            "selected": false,
+            "text": "csg",
+            "value": "csg"
+          },
+          {
+            "selected": false,
+            "text": "dataavailability",
+            "value": "dataavailability"
+          },
+          {
+            "selected": false,
+            "text": "dataeng",
+            "value": "dataeng"
+          },
+          {
+            "selected": false,
+            "text": "dataengresponsys",
+            "value": "dataengresponsys"
+          },
+          {
+            "selected": false,
+            "text": "dataingest",
+            "value": "dataingest"
+          },
+          {
+            "selected": false,
+            "text": "datalicense",
+            "value": "datalicense"
+          },
+          {
+            "selected": false,
+            "text": "datamatch",
+            "value": "datamatch"
+          },
+          {
+            "selected": false,
+            "text": "datanado",
+            "value": "datanado"
+          },
+          {
+            "selected": false,
+            "text": "dataproducts",
+            "value": "dataproducts"
+          },
+          {
+            "selected": false,
+            "text": "datausage",
+            "value": "datausage"
+          },
+          {
+            "selected": false,
+            "text": "dbaidc",
+            "value": "dbaidc"
+          },
+          {
+            "selected": false,
+            "text": "dirt",
+            "value": "dirt"
+          },
+          {
+            "selected": true,
+            "text": "dmp",
+            "value": "dmp"
+          },
+          {
+            "selected": false,
+            "text": "dmwf",
+            "value": "dmwf"
+          },
+          {
+            "selected": false,
+            "text": "dsdatafirst",
+            "value": "dsdatafirst"
+          },
+          {
+            "selected": false,
+            "text": "dsi",
+            "value": "dsi"
+          },
+          {
+            "selected": false,
+            "text": "eupanalytics",
+            "value": "eupanalytics"
+          },
+          {
+            "selected": false,
+            "text": "extplatformidc",
+            "value": "extplatformidc"
+          },
+          {
+            "selected": false,
+            "text": "finapps",
+            "value": "finapps"
+          },
+          {
+            "selected": false,
+            "text": "fintech",
+            "value": "fintech"
+          },
+          {
+            "selected": false,
+            "text": "greyjoy",
+            "value": "greyjoy"
+          },
+          {
+            "selected": false,
+            "text": "hygiene",
+            "value": "hygiene"
+          },
+          {
+            "selected": false,
+            "text": "hyperloop",
+            "value": "hyperloop"
+          },
+          {
+            "selected": false,
+            "text": "identity",
+            "value": "identity"
+          },
+          {
+            "selected": false,
+            "text": "idmds",
+            "value": "idmds"
+          },
+          {
+            "selected": false,
+            "text": "imdata",
+            "value": "imdata"
+          },
+          {
+            "selected": false,
+            "text": "infracore",
+            "value": "infracore"
+          },
+          {
+            "selected": false,
+            "text": "infraplat",
+            "value": "infraplat"
+          },
+          {
+            "selected": false,
+            "text": "matchextract",
+            "value": "matchextract"
+          },
+          {
+            "selected": false,
+            "text": "measplat",
+            "value": "measplat"
+          },
+          {
+            "selected": false,
+            "text": "measurement360",
+            "value": "measurement360"
+          },
+          {
+            "selected": false,
+            "text": "metadatavault",
+            "value": "metadatavault"
+          },
+          {
+            "selected": false,
+            "text": "moatnginx",
+            "value": "moatnginx"
+          },
+          {
+            "selected": false,
+            "text": "moatoutcomesadsdev",
+            "value": "moatoutcomesadsdev"
+          },
+          {
+            "selected": false,
+            "text": "moatoutcomesia",
+            "value": "moatoutcomesia"
+          },
+          {
+            "selected": false,
+            "text": "moatoutcomesmethodology",
+            "value": "moatoutcomesmethodology"
+          },
+          {
+            "selected": false,
+            "text": "moatoutcomesui",
+            "value": "moatoutcomesui"
+          },
+          {
+            "selected": false,
+            "text": "mpe",
+            "value": "mpe"
+          },
+          {
+            "selected": false,
+            "text": "odccontextcog",
+            "value": "odccontextcog"
+          },
+          {
+            "selected": false,
+            "text": "odcqa",
+            "value": "odcqa"
+          },
+          {
+            "selected": false,
+            "text": "onramp",
+            "value": "onramp"
+          },
+          {
+            "selected": false,
+            "text": "planner",
+            "value": "planner"
+          },
+          {
+            "selected": false,
+            "text": "platform",
+            "value": "platform"
+          },
+          {
+            "selected": false,
+            "text": "pmobi",
+            "value": "pmobi"
+          },
+          {
+            "selected": false,
+            "text": "pmotooling",
+            "value": "pmotooling"
+          },
+          {
+            "selected": false,
+            "text": "pub",
+            "value": "pub"
+          },
+          {
+            "selected": false,
+            "text": "rtap",
+            "value": "rtap"
+          },
+          {
+            "selected": false,
+            "text": "saasactivation",
+            "value": "saasactivation"
+          },
+          {
+            "selected": false,
+            "text": "saascore",
+            "value": "saascore"
+          },
+          {
+            "selected": false,
+            "text": "security",
+            "value": "security"
+          },
+          {
+            "selected": false,
+            "text": "skywalker",
+            "value": "skywalker"
+          },
+          {
+            "selected": false,
+            "text": "stark",
+            "value": "stark"
+          },
+          {
+            "selected": false,
+            "text": "starkcog",
+            "value": "starkcog"
+          },
+          {
+            "selected": false,
+            "text": "techfeature",
+            "value": "techfeature"
+          },
+          {
+            "selected": false,
+            "text": "tyrell",
+            "value": "tyrell"
+          },
+          {
+            "selected": false,
+            "text": "xas",
+            "value": "xas"
+          },
+          {
+            "selected": false,
+            "text": "xrefproducer",
+            "value": "xrefproducer"
+          },
+          {
+            "selected": false,
+            "text": "yoda",
+            "value": "yoda"
+          }
+        ],
+        "query": "aaa, aeads, air, analytair, atlas, audiencemodeling, audienceplatform, audiencetooling, audplat, ax,axidc, baratheon, campaigndev, campaignhub, contextdevelopers, contextsystem, cookiedough, csg,dataavailability, dataeng, dataengresponsys, dataingest, datalicense, datamatch, datanado, dataproducts,datausage, dbaidc, dirt, dmp, dmwf, dsdatafirst, dsi, eupanalytics, extplatformidc, finapps,fintech, greyjoy, hygiene, hyperloop, identity, idmds, imdata, infracore, infraplat, matchextract, measplat,measurement360, metadatavault, moatnginx, moatoutcomesadsdev, moatoutcomesia, moatoutcomesmethodology,moatoutcomesui, mpe, odccontextcog, odcqa, onramp,planner, platform, pmobi, pmotooling, pub,rtap, saasactivation, saascore, security, skywalker, stark, starkcog, techfeature, tyrell, xas,xrefproducer, yoda",
+        "queryValue": "",
+        "skipUrlSync": false,
+        "type": "custom"
+      }
+    ]
+  },
+  "time": {
+    "from": "now-6h",
+    "to": "now"
+  },
+  "timepicker": {},
+  "timezone": "",
+  "title": "Elasticearch JSON Parsing",
+  "uid": "dO7-BDBGk",
+  "version": 59
+}
