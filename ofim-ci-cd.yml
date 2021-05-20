@@ -1,0 +1,335 @@
+image: containers.oracledatacloud.com/node:12.6
+
+stages:
+- dockerize_base
+- audit
+- dockerize
+- deploy_dev_or_qa
+- install
+- run_tests
+- deploy_prod
+
+variables:
+ # this variable name is picked up by npm. you can also explicitly pass it as a param to 'npm ci'
+ npm_config_cache: $CI_PROJECT_DIR/.npm
+ TESTURL: "https://partner-rc.iad.bluekai.com"
+
+.cache: &cache_template
+    key: NPM_CACHE
+    paths:
+      - .npm/
+      - badges/
+      - node_modules/
+
+
+dockerize_ofim_base:
+ stage: dockerize_base
+ tags: [odc-docker-build]
+ #cache: *cache_template
+ image:
+  name: gcr.io/kaniko-project/executor:debug-v0.7.0
+  entrypoint: [""]
+  
+ only:
+    changes: 
+      - package.json
+      - package-lock.json   
+ image:
+    # We must use the debug version because it has the embedded shell, which we use in our script below
+   name: gcr.io/kaniko-project/executor:debug-v0.7.0
+   entrypoint: [""]
+ tags: [odc-docker-build]
+ script:
+    - cp package-lock.json package.json .npmrc ./base-container/
+    - /kaniko/executor --context $CI_PROJECT_DIR/base-container --dockerfile $CI_PROJECT_DIR/base-container/Dockerfile --destination containers.oracledatacloud.com/odc-fintech/ofim_base:3.3
+
+
+
+# Audits this library for vulnerabilities
+# audit:
+#   stage: audit
+#   tags: [odc-common-build]
+#   #image: containers.oracledatacloud.com/node:10.15 # Image here as an example, but can be in the root of the pipeline
+#   only:
+#     - master
+#   allow_failure: true
+
+# #  only:
+# #    changes:
+# #      - package.json
+# #      - package-lock.json
+# #    variables:
+# #    - $AUDIT
+
+#  # when: manual
+#   except:
+#     - tags
+#   script:
+#     # Print audit results to console without breaking the build
+#     # The `2>/dev/null` will escape the exit code 1 when npm audit finds vulnerabilities
+#     - npm audit --registry="https://registry.npmjs.org/" 2>/dev/null || echo 'All done'
+#     # Build badge
+#     # grep "high\tnpm"  to get just high severity
+#     - npm audit --parseable --registry="https://registry.npmjs.org/" | grep "critical" | wc -l 2>/dev/null > audit_p || echo 'Finished writing results'
+#     - total=$(cat audit_p)
+#     - echo "Found ${total} audit issues"
+#     # Set a color for the badge, red if CVEs >= 1, otherwise green
+#     - if [[ $total -ge 1 ]]; then color='e05d44'; else color='4c1'; fi
+#     # Create badge
+#     - mkdir -p badges
+#     - echo "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"190\" height=\"20\"><linearGradient id=\"a\" x2=\"0\" y2=\"100%\"><stop offset=\"0\" stop-color=\"#bbb\" stop-opacity=\".1\"/><stop offset=\"1\" stop-opacity=\".1\"/></linearGradient><rect rx=\"3\" width=\"190\" height=\"20\" fill=\"#555\"/><rect rx=\"3\" x=\"60\" width=\"130\" height=\"20\" fill=\"#$color\"/><path fill=\"#$color\" d=\"M88 0h4v20h-4z\"/><rect rx=\"3\" width=\"190\" height=\"20\" fill=\"url(#a)\"/><g fill=\"#fff\" text-anchor=\"middle\" font-family=\"DejaVu Sans,Verdana,Geneva,sans-serif\" font-size=\"11\"><text x=\"40\" y=\"15\" fill=\"#010101\" fill-opacity=\".3\">Audit</text><text x=\"40\" y=\"14\">Audit</text><text x=\"120\" y=\"15\" fill=\"#010101\" fill-opacity=\".3\">${total} criticalVulnerabilities</text><text x=\"120\" y=\"14\">${total} criticalVulnerabilities</text></g></svg>" > badges/audit.svg
+#   artifacts:
+#     paths:
+#       - badges
+
+
+
+# run tests:
+#  stage: test
+#  tags: [odc-common-build]
+#  script:
+#     - npm test
+
+#dockerize base express:
+#    stage: dockerize
+#    cache: {} # skip cache
+#    image:
+#    # We must use the debug version because it has the embedded shell, which we use in our script below
+#      name: gcr.io/kaniko-project/executor:debug-v0.7.0
+#      entrypoint: [""]
+#    tags: [odc-docker-build]
+#    when: manual
+#    #allow_failure: true
+#    script:
+#        - cp package-lock.json package.json .npmrc containers/base-express/
+#        - /kaniko/executor --context $CI_PROJECT_DIR/containers/base-express --dockerfile $CI_PROJECT_DIR/containers/base-express/Dockerfile --destination containers.oracledatacloud.com/odc-fintech/ofim_base:1
+
+
+dockerize master:
+  stage: dockerize
+  only:
+      - master
+  cache: *cache_template
+  image:
+    # We must use the debug version because it has the embedded shell, which we use in our script below
+    name: gcr.io/kaniko-project/executor:debug-v0.7.0
+    entrypoint: [""]
+  tags: [odc-docker-build]
+  script:
+    - /kaniko/executor --context $CI_PROJECT_DIR --dockerfile $CI_PROJECT_DIR/Dockerfile  --destination containers.oracledatacloud.com/odc-fintech/saas-fileingest-ui:MASTER-$CI_COMMIT_SHA
+
+
+dockerize branch:
+  stage: dockerize
+  except:
+      - master
+      - ofim-rc
+
+  image:
+    # We must use the debug version because it has the embedded shell, which we use in our script below
+    name: gcr.io/kaniko-project/executor:debug-v0.7.0
+    entrypoint: [""]
+  tags: [odc-docker-build]
+#  when: manual
+  script:
+    - /kaniko/executor --context $CI_PROJECT_DIR --dockerfile $CI_PROJECT_DIR/Dockerfile  --destination containers.oracledatacloud.com/odc-fintech/saas-fileingest-ui:DEV-$CI_COMMIT_SHA
+
+
+dockerize rc:
+  stage: dockerize
+  only:
+      - ofim-rc
+  cache: *cache_template
+  image:
+    # We must use the debug version because it has the embedded shell, which we use in our script below
+    name: gcr.io/kaniko-project/executor:debug-v0.7.0
+    entrypoint: [""]
+  tags: [odc-docker-build]
+  script:
+    - /kaniko/executor --context $CI_PROJECT_DIR --dockerfile $CI_PROJECT_DIR/Dockerfile  --destination containers.oracledatacloud.com/odc-fintech/saas-fileingest-ui:ofim-rc-$CI_COMMIT_SHA
+
+
+
+deploy k8s-dev oci:
+    stage: deploy_dev_or_qa
+    image: containers.oracledatacloud.com/oracledatacloud.com/helmsman:v1.10.1-helm-v2.14.1-nonRoot
+    tags: [finapps,us-iad-a]
+    dependencies: []
+    # no need to d/l cache b/c we are just deploying images from containers.oracledatacloud.com
+    cache: {}
+    environment:
+        name: dev-$CI_COMMIT_REF_SLUG
+    except:
+      - master
+      - ofim-rc
+
+    script:
+        - echo Using image containers.oracledatacloud.com/odc-fintech/saas-fileingest-ui:DEV-$CI_COMMIT_SHA
+        - echo Will deploy this from template
+        - helm template kubernetes -f kubernetes/dev.yaml --set name=ofim-dev-$CI_COMMIT_REF_SLUG --set image=containers.oracledatacloud.com/odc-fintech/saas-fileingest-ui:DEV-$CI_COMMIT_SHA
+        - helm template kubernetes -f kubernetes/dev.yaml --set name=ofim-dev-$CI_COMMIT_REF_SLUG --set image=containers.oracledatacloud.com/odc-fintech/saas-fileingest-ui:DEV-$CI_COMMIT_SHA  | kubectl  -n finapps-dev apply -f -
+        - echo Adding Our ingress
+        - helm template kubernetes/ingress -f kubernetes/ingress/dev-ingress-saasfileingest.yaml --set name=ofim-dev-$CI_COMMIT_REF_SLUG --set host=ofim-dev-$CI_COMMIT_REF_SLUG-public.us-iad-a.k8s.oracledatacloud.com
+        - helm template kubernetes/ingress -f kubernetes/ingress/dev-ingress-saasfileingest.yaml --set name=ofim-dev-$CI_COMMIT_REF_SLUG --set host=ofim-dev-$CI_COMMIT_REF_SLUG-public.us-iad-a.k8s.oracledatacloud.com| kubectl  -n finapps-dev apply -f -
+        - echo "Watching for successful rollout"
+        - kubectl -n finapps-dev rollout status deployment/ofim-dev-$CI_COMMIT_REF_SLUG
+        # deleting  PrometheuRule file so that it doesnt send continuous dev alerts. Please uncomment if you need the alert to execute explicitly.
+        - kubectl -n finapps-dev delete prometheusrule ofim-dev-$CI_COMMIT_REF_SLUG
+        - echo "Dev URL :====>>>  ofim-dev-$CI_COMMIT_REF_SLUG-public.us-iad-a.k8s.oracledatacloud.com"
+
+        
+#only happen from ofim-rc branch
+deploy rc:
+    stage: deploy_dev_or_qa
+    image: containers.oracledatacloud.com/oracledatacloud.com/helmsman:v1.10.1-helm-v2.14.1-nonRoot
+    tags: [finapps,us-iad-a]
+    dependencies: []
+    # no need to d/l cache b/c we are just deploying images from containers.oracledatacloud.com
+    cache: {}
+    environment:
+        name: rc
+    only:
+        - ofim-rc
+
+    script:
+        - echo Using image containers.oracledatacloud.com/odc-fintech/saas-fileingest-ui:MASTER-$CI_COMMIT_SHA
+        - echo Will deploy this from template
+        - helm template kubernetes -f kubernetes/qa.yaml --set image=containers.oracledatacloud.com/odc-fintech/saas-fileingest-ui:ofim-rc-$CI_COMMIT_SHA
+        - helm template kubernetes -f kubernetes/qa.yaml --set image=containers.oracledatacloud.com/odc-fintech/saas-fileingest-ui:ofim-rc-$CI_COMMIT_SHA | kubectl  -n finapps-test apply -f -
+        - echo Adding Our ingress
+        - helm template kubernetes/ingress -f kubernetes/ingress/test-ingress-saasfileingest.yaml
+        - helm template kubernetes/ingress -f kubernetes/ingress/test-ingress-saasfileingest.yaml | kubectl  -n finapps-test apply -f -
+        - echo "Watching for successful rollout"
+        - kubectl -n finapps-test rollout status deployment/saasfileingest-ui-test
+        
+
+
+
+deploy prod-bk IAD:
+    stage: deploy_prod
+    image: containers.oracledatacloud.com/oracledatacloud.com/helmsman:v1.10.1-helm-v2.14.1-nonRoot
+    tags: [finapps,us-iad-a]
+
+    dependencies: []
+    # no need to d/l cache b/c we are just deploying images from containers.oracledatacloud.com
+    cache: {}
+    environment:
+        name: production-bk
+    only:
+       - master
+    when: manual
+    script:
+        - echo Using image containers.oracledatacloud.com/odc-fintech/saas-fileingest-ui:MASTER-$CI_COMMIT_SHA
+        - echo Will deploy this from template
+        - helm template kubernetes -f kubernetes/prod-bk.yaml --set image=containers.oracledatacloud.com/odc-fintech/saas-fileingest-ui:MASTER-$CI_COMMIT_SHA
+        - helm template kubernetes -f kubernetes/prod-bk.yaml --set image=containers.oracledatacloud.com/odc-fintech/saas-fileingest-ui:MASTER-$CI_COMMIT_SHA | kubectl -n finapps-prod apply -f -
+        - echo Adding Our IAD ingress
+        - helm template kubernetes/ingress -f kubernetes/ingress/prod-bk-ingress-iad-saasfileingest.yaml
+        - helm template kubernetes/ingress -f kubernetes/ingress/prod-bk-ingress-iad-saasfileingest.yaml| kubectl   -n finapps-prod apply -f -
+        - echo "Watching for successful Prod rollout"
+        - kubectl -n finapps-prod rollout status deployment/saasfileingest-ui-prod-bk
+
+
+
+deploy prod PHX:
+    stage: deploy_prod
+    image: containers.oracledatacloud.com/oracledatacloud.com/helmsman:v1.10.1-helm-v2.14.1-nonRoot
+    tags: [finapps,us-phx-a]
+    when: manual
+    dependencies: []
+    # no need to d/l cache b/c we are just deploying images from containers.oracledatacloud.com
+    cache: {}
+    environment:
+        name: production
+    only:
+       - master
+    script:
+        - echo Using image containers.oracledatacloud.com/odc-fintech/saas-fileingest-ui:MASTER-$CI_COMMIT_SHA
+        - echo Will deploy this from template
+        - helm template kubernetes -f kubernetes/prod.yaml --set image=containers.oracledatacloud.com/odc-fintech/saas-fileingest-ui:MASTER-$CI_COMMIT_SHA
+        - helm template kubernetes -f kubernetes/prod.yaml --set image=containers.oracledatacloud.com/odc-fintech/saas-fileingest-ui:MASTER-$CI_COMMIT_SHA  | kubectl  -n finapps-prod apply -f -
+        - echo Adding Our PHX  ingress
+        - helm template kubernetes/ingress -f kubernetes/ingress/prod-ingress-phx-saasfileingest.yaml
+        - helm template kubernetes/ingress -f kubernetes/ingress/prod-ingress-phx-saasfileingest.yaml | kubectl  -n finapps-prod apply -f -
+        - echo "Watching for successful Prod rollout"
+        - kubectl -n finapps-prod rollout status deployment/saasfileingest-ui-prod
+
+#only happen from master branch
+deploy master2rc:
+    stage: deploy_prod
+    image: containers.oracledatacloud.com/oracledatacloud.com/helmsman:v1.10.1-helm-v2.14.1-nonRoot
+    tags: [finapps,us-iad-a]
+    dependencies: []
+    # no need to d/l cache b/c we are just deploying images from containers.oracledatacloud.com
+    cache: {}
+    environment:
+        name: master2rc
+    when: manual
+    only:
+        - master
+
+    script:
+        - echo Using image containers.oracledatacloud.com/odc-fintech/saas-fileingest-ui:MASTER-$CI_COMMIT_SHA
+        - echo Will deploy this from template
+        - helm template kubernetes -f kubernetes/qa.yaml --set image=containers.oracledatacloud.com/odc-fintech/saas-fileingest-ui:MASTER-$CI_COMMIT_SHA
+        - helm template kubernetes -f kubernetes/qa.yaml --set image=containers.oracledatacloud.com/odc-fintech/saas-fileingest-ui:MASTER-$CI_COMMIT_SHA | kubectl  -n finapps-test apply -f -
+        - echo Adding Our ingress
+        - helm template kubernetes/ingress -f kubernetes/ingress/test-ingress-saasfileingest.yaml
+        - helm template kubernetes/ingress -f kubernetes/ingress/test-ingress-saasfileingest.yaml | kubectl  -n finapps-test apply -f -
+        - echo "Watching for successful rollout"
+        - kubectl -n finapps-test rollout status deployment/saasfileingest-ui-test
+
+npm_install:
+  stage: install
+  tags: [odc-common-build]
+  cache: *cache_template
+  only:
+    - ofim-rc
+  script:
+    - echo "--doing npm install now--"
+    - npm install
+#   only:
+#     changes: 
+#       - package.json
+#       - package-lock.json 
+
+  # - npm ci
+  # this makes the files available to downstream jobs without using the cache
+  artifacts:
+    expire_in: 1 week
+    paths:
+      - node_modules
+
+run automation tests:
+    stage: run_tests
+    image: containers.oracledatacloud.com/test-turks/puppeteer:bravo
+    #tags: [odc-common-build]
+    tags: [finapps,us-iad-a]
+    cache: *cache_template
+    only:
+      - ofim-rc
+    script:
+        - sleep 3m
+        - mkdir -p test-results
+        - echo "creating test results summary file"
+        - touch testSummaryFile.txt
+        - echo "executing tests by passing URL::" $TESTURL
+        - sh newTestRunner.sh $TESTURL
+        - echo "###displaying extracted test summary###"
+        - cat testSummaryFile.txt
+        
+    artifacts:
+        when: always
+        paths:
+         - ./html-report
+         - ./test-results
+         - testSummaryFile.txt
+    after_script:
+         - 'SLACK_CHANNEL="team_quantum_qa"'
+         - 'PROD_PUBLISH_SLACK_MESSAGE=":ship_it_parrot: --QA has published a new test report--  :ship_it_parrot: \n
+     ===============================================\n
+    :fedora: *Artifactory Path*: ${CI_JOB_ID}\n
+    :link: *Link of the Report*: https://gitlab.oracledatacloud.com/odc-fintech/saas-fileingest-ui/-/jobs/${CI_JOB_ID}/artifacts/file/html-report/report.html\n
+    :standup: *Status of the Report*: \n$(cat testSummaryFile.txt)\n
+    :writing_hand: *Publisher*: ${GITLAB_USER_NAME}"'
+         - curl -v "$SLACK_WEBHOOK" -H "Content-Type:application/json" -d "{\"text\":\"${PROD_PUBLISH_SLACK_MESSAGE}\",\"channel\":\"${SLACK_CHANNEL}\"}"
