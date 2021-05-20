@@ -1,0 +1,2716 @@
+{
+  "annotations": {
+    "list": [
+      {
+        "builtIn": 1,
+        "datasource": "-- Grafana --",
+        "enable": true,
+        "hide": true,
+        "iconColor": "rgba(0, 211, 255, 1)",
+        "name": "Annotations & Alerts",
+        "type": "dashboard"
+      }
+    ]
+  },
+  "editable": true,
+  "gnetId": null,
+  "graphTooltip": 0,
+  "id": 602,
+  "iteration": 1621513848130,
+  "links": [],
+  "panels": [
+    {
+      "collapsed": false,
+      "datasource": null,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 0
+      },
+      "id": 10,
+      "panels": [],
+      "title": "Cluster Status",
+      "type": "row"
+    },
+    {
+      "colors": [
+        "#299c46",
+        "rgba(237, 129, 40, 0.89)",
+        "#d44a3a",
+        "#4040a0"
+      ],
+      "datasource": "$Datasource",
+      "fieldConfig": {
+        "defaults": {},
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 6,
+        "w": 4,
+        "x": 0,
+        "y": 1
+      },
+      "id": 3,
+      "mappingType": 1,
+      "mappingTypes": [
+        {
+          "name": "value to text",
+          "value": 1
+        },
+        {
+          "name": "range to text",
+          "value": 2
+        }
+      ],
+      "polystat": {
+        "animationSpeed": 2500,
+        "columnAutoSize": true,
+        "columns": "",
+        "defaultClickThrough": "",
+        "defaultClickThroughNewTab": false,
+        "defaultClickThroughSanitize": false,
+        "displayLimit": "",
+        "fontAutoColor": true,
+        "fontAutoScale": true,
+        "fontSize": 12,
+        "fontType": "Roboto",
+        "globalDecimals": 2,
+        "globalDisplayMode": "all",
+        "globalDisplayTextTriggeredEmpty": "OK",
+        "globalOperatorName": "max",
+        "globalUnitFormat": "none",
+        "gradientEnabled": true,
+        "hexagonSortByDirection": 1,
+        "hexagonSortByField": "name",
+        "maxMetrics": 0,
+        "polygonBorderColor": "black",
+        "polygonBorderSize": 2,
+        "polygonGlobalFillColor": "#0a50a1",
+        "radius": "",
+        "radiusAutoSize": true,
+        "rowAutoSize": true,
+        "rows": "",
+        "shape": "hexagon_pointed_top",
+        "tooltipDisplayMode": "triggered",
+        "tooltipDisplayTextTriggeredEmpty": "OK",
+        "tooltipEnabled": true,
+        "tooltipFontSize": 12,
+        "tooltipFontType": "Roboto",
+        "tooltipPrimarySortDirection": 2,
+        "tooltipPrimarySortField": "thresholdLevel",
+        "tooltipSecondarySortDirection": 2,
+        "tooltipSecondarySortField": "value",
+        "tooltipTimestampEnabled": false,
+        "valueEnabled": true
+      },
+      "rangeMaps": [
+        {
+          "from": "null",
+          "text": "N/A",
+          "to": "null"
+        }
+      ],
+      "savedComposites": [
+        {
+          "animateMode": "triggered",
+          "clickThrough": "",
+          "compositeName": "us-phx-a",
+          "enabled": true,
+          "hideMembers": true,
+          "label": "COMPOSITE 1",
+          "members": [
+            {
+              "seriesName": "us-phx-a-.*"
+            }
+          ],
+          "newTabEnabled": true,
+          "sanitizeURLEnabled": true,
+          "sanitizedURL": "",
+          "showName": true,
+          "showValue": true,
+          "thresholdLevel": 0
+        },
+        {
+          "animateMode": "triggered",
+          "clickThrough": "",
+          "compositeName": "us-phx-c",
+          "enabled": true,
+          "hideMembers": true,
+          "label": "COMPOSITE 2",
+          "members": [
+            {
+              "seriesName": "us-phx-c-.*"
+            }
+          ],
+          "newTabEnabled": true,
+          "sanitizeURLEnabled": true,
+          "sanitizedURL": "",
+          "showName": true,
+          "showValue": true,
+          "thresholdLevel": 0
+        },
+        {
+          "animateMode": "triggered",
+          "clickThrough": "",
+          "compositeName": "us-iad-util-a",
+          "enabled": true,
+          "hideMembers": true,
+          "label": "COMPOSITE 3",
+          "members": [
+            {
+              "seriesName": "us-iad-util-a-.*"
+            }
+          ],
+          "newTabEnabled": true,
+          "sanitizeURLEnabled": true,
+          "sanitizedURL": "",
+          "showName": true,
+          "showValue": true,
+          "thresholdLevel": 0
+        },
+        {
+          "animateMode": "triggered",
+          "clickThrough": "",
+          "compositeName": "us-iad-c",
+          "enabled": true,
+          "hideMembers": true,
+          "label": "COMPOSITE 4",
+          "members": [
+            {
+              "seriesName": "us-iad-c-.*"
+            }
+          ],
+          "newTabEnabled": true,
+          "sanitizeURLEnabled": true,
+          "sanitizedURL": "",
+          "showName": true,
+          "showValue": true,
+          "thresholdLevel": 0
+        },
+        {
+          "animateMode": "triggered",
+          "clickThrough": "",
+          "compositeName": "us-iad-a",
+          "enabled": true,
+          "hideMembers": true,
+          "label": "COMPOSITE 5",
+          "members": [
+            {
+              "seriesName": "us-iad-a-.*"
+            }
+          ],
+          "newTabEnabled": true,
+          "sanitizeURLEnabled": true,
+          "sanitizedURL": "",
+          "showName": true,
+          "showValue": true,
+          "thresholdLevel": 0
+        },
+        {
+          "animateMode": "triggered",
+          "clickThrough": "",
+          "compositeName": "prd-use1-eks-b",
+          "enabled": true,
+          "hideMembers": true,
+          "label": "COMPOSITE 6",
+          "members": [
+            {
+              "seriesName": "ip-.*prd-infra.*"
+            }
+          ],
+          "newTabEnabled": true,
+          "sanitizeURLEnabled": true,
+          "sanitizedURL": "",
+          "showName": true,
+          "showValue": true,
+          "thresholdLevel": 0
+        },
+        {
+          "animateMode": "triggered",
+          "clickThrough": "",
+          "compositeName": "dev-use1-eks-a",
+          "enabled": true,
+          "hideMembers": true,
+          "label": "COMPOSITE 7",
+          "members": [
+            {
+              "seriesName": "ip-.*ec2.*"
+            }
+          ],
+          "newTabEnabled": true,
+          "sanitizeURLEnabled": true,
+          "sanitizedURL": "",
+          "showName": true,
+          "showValue": true,
+          "thresholdLevel": 0
+        }
+      ],
+      "savedOverrides": [
+        {
+          "clickThrough": "",
+          "colors": [
+            "#299c46",
+            "#e5ac0e",
+            "#bf1b00",
+            "#ffffff"
+          ],
+          "decimals": null,
+          "enabled": true,
+          "label": "OVERRIDE 1",
+          "metricName": ".*DNS.*",
+          "newTabEnabled": true,
+          "operatorName": "max",
+          "prefix": "",
+          "sanitizeURLEnabled": true,
+          "scaledDecimals": null,
+          "suffix": "",
+          "thresholds": [
+            {
+              "color": "#299c46",
+              "state": 0,
+              "value": 0
+            },
+            {
+              "color": "#e5ac0e",
+              "state": 1,
+              "value": 1
+            },
+            {
+              "color": "#bf1b00",
+              "state": 2,
+              "value": 5
+            }
+          ],
+          "unitFormat": "s"
+        },
+        {
+          "clickThrough": "",
+          "colors": [
+            "#299c46",
+            "#e5ac0e",
+            "#bf1b00",
+            "#ffffff"
+          ],
+          "decimals": 0,
+          "enabled": true,
+          "label": "OVERRIDE 2",
+          "metricName": ".*HTTP.*",
+          "newTabEnabled": true,
+          "operatorName": "avg",
+          "prefix": "",
+          "sanitizeURLEnabled": true,
+          "scaledDecimals": null,
+          "suffix": "",
+          "thresholds": [
+            {
+              "color": "#299c46",
+              "state": 0,
+              "value": 200
+            },
+            {
+              "color": "#e5ac0e",
+              "state": 1,
+              "value": 400
+            },
+            {
+              "color": "#bf1b00",
+              "state": 2,
+              "value": 500
+            }
+          ],
+          "unitFormat": "none"
+        },
+        {
+          "clickThrough": "",
+          "colors": [
+            "#299c46",
+            "#e5ac0e",
+            "#bf1b00",
+            "#ffffff"
+          ],
+          "decimals": 0,
+          "enabled": true,
+          "label": "OVERRIDE 3",
+          "metricName": ".*Success",
+          "newTabEnabled": true,
+          "operatorName": "min",
+          "prefix": "",
+          "sanitizeURLEnabled": true,
+          "scaledDecimals": null,
+          "suffix": "",
+          "thresholds": [
+            {
+              "color": "#bf1b00",
+              "state": 2,
+              "value": 0
+            },
+            {
+              "color": "#299c46",
+              "state": 0,
+              "value": 1
+            }
+          ],
+          "unitFormat": "none"
+        }
+      ],
+      "targets": [
+        {
+          "expr": "federate:probe_dns_lookup_time_seconds",
+          "interval": "",
+          "intervalFactor": 2,
+          "legendFormat": "{{kubernetes_pod_node_name}} DNS Lookup Time",
+          "refId": "A"
+        },
+        {
+          "expr": "federate:probe_success{job=~\".*external\"}",
+          "interval": "",
+          "intervalFactor": 2,
+          "legendFormat": "{{kubernetes_pod_node_name}} External Success",
+          "refId": "C"
+        },
+        {
+          "expr": "federate:probe_success{job=~\".*dex\"}",
+          "interval": "",
+          "intervalFactor": 2,
+          "legendFormat": "{{kubernetes_pod_node_name}} Internal Success",
+          "refId": "D"
+        }
+      ],
+      "timeFrom": null,
+      "timeShift": null,
+      "title": "Cluster Network Checks",
+      "type": "grafana-polystat-panel",
+      "valueMaps": [
+        {
+          "op": "=",
+          "text": "N/A",
+          "value": "null"
+        }
+      ]
+    },
+    {
+      "colors": [
+        "#299c46",
+        "rgba(237, 129, 40, 0.89)",
+        "#d44a3a",
+        "#4040a0"
+      ],
+      "datasource": "$Datasource",
+      "fieldConfig": {
+        "defaults": {},
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 6,
+        "w": 4,
+        "x": 4,
+        "y": 1
+      },
+      "id": 6,
+      "mappingType": 1,
+      "mappingTypes": [
+        {
+          "name": "value to text",
+          "value": 1
+        },
+        {
+          "name": "range to text",
+          "value": 2
+        }
+      ],
+      "polystat": {
+        "animationSpeed": 2500,
+        "columnAutoSize": true,
+        "columns": "",
+        "defaultClickThrough": "",
+        "defaultClickThroughNewTab": false,
+        "defaultClickThroughSanitize": false,
+        "displayLimit": "",
+        "fontAutoColor": true,
+        "fontAutoScale": true,
+        "fontSize": 12,
+        "fontType": "Roboto",
+        "globalDecimals": 2,
+        "globalDisplayMode": "all",
+        "globalDisplayTextTriggeredEmpty": "OK",
+        "globalOperatorName": "avg",
+        "globalUnitFormat": "short",
+        "gradientEnabled": true,
+        "hexagonSortByDirection": 1,
+        "hexagonSortByField": "name",
+        "maxMetrics": 0,
+        "polygonBorderColor": "black",
+        "polygonBorderSize": 2,
+        "polygonGlobalFillColor": "#0a50a1",
+        "radius": "",
+        "radiusAutoSize": true,
+        "rowAutoSize": true,
+        "rows": "",
+        "shape": "hexagon_pointed_top",
+        "tooltipDisplayMode": "triggered",
+        "tooltipDisplayTextTriggeredEmpty": "OK",
+        "tooltipEnabled": true,
+        "tooltipFontSize": 12,
+        "tooltipFontType": "Roboto",
+        "tooltipPrimarySortDirection": 2,
+        "tooltipPrimarySortField": "thresholdLevel",
+        "tooltipSecondarySortDirection": 2,
+        "tooltipSecondarySortField": "value",
+        "tooltipTimestampEnabled": false,
+        "valueEnabled": true
+      },
+      "rangeMaps": [
+        {
+          "from": "null",
+          "text": "N/A",
+          "to": "null"
+        }
+      ],
+      "savedComposites": [
+        {
+          "animateMode": "triggered",
+          "clickThrough": "",
+          "compositeName": "us-iad-a",
+          "enabled": true,
+          "hideMembers": true,
+          "label": "COMPOSITE 1",
+          "members": [
+            {
+              "seriesName": "Prometheus us-iad-a.*"
+            }
+          ],
+          "newTabEnabled": true,
+          "sanitizeURLEnabled": true,
+          "sanitizedURL": "",
+          "showName": true,
+          "showValue": true,
+          "thresholdLevel": 0
+        },
+        {
+          "animateMode": "triggered",
+          "clickThrough": "",
+          "compositeName": "us-phx-c",
+          "enabled": true,
+          "hideMembers": true,
+          "label": "COMPOSITE 2",
+          "members": [
+            {
+              "seriesName": "Prometheus us-phx-c.*"
+            }
+          ],
+          "newTabEnabled": true,
+          "sanitizeURLEnabled": true,
+          "sanitizedURL": "",
+          "showName": true,
+          "showValue": true,
+          "thresholdLevel": 0
+        },
+        {
+          "animateMode": "triggered",
+          "clickThrough": "",
+          "compositeName": "us-phx-a",
+          "enabled": true,
+          "hideMembers": true,
+          "label": "COMPOSITE 3",
+          "members": [
+            {
+              "seriesName": "Prometheus us-phx-a.*"
+            }
+          ],
+          "newTabEnabled": true,
+          "sanitizeURLEnabled": true,
+          "sanitizedURL": "",
+          "showName": true,
+          "showValue": true,
+          "thresholdLevel": 0
+        },
+        {
+          "animateMode": "triggered",
+          "clickThrough": "",
+          "compositeName": "us-iad-util-a",
+          "enabled": true,
+          "hideMembers": true,
+          "label": "COMPOSITE 4",
+          "members": [
+            {
+              "seriesName": "Prometheus us-iad-util-a.*"
+            }
+          ],
+          "newTabEnabled": true,
+          "sanitizeURLEnabled": true,
+          "sanitizedURL": "",
+          "showName": true,
+          "showValue": true,
+          "thresholdLevel": 0
+        },
+        {
+          "animateMode": "all",
+          "clickThrough": "",
+          "compositeName": "us-iad-c",
+          "enabled": true,
+          "hideMembers": true,
+          "label": "COMPOSITE 5",
+          "members": [
+            {
+              "seriesName": "Prometheus us-iad-c.*"
+            }
+          ],
+          "newTabEnabled": true,
+          "sanitizeURLEnabled": true,
+          "sanitizedURL": "",
+          "showName": true,
+          "showValue": true,
+          "thresholdLevel": 0
+        },
+        {
+          "animateMode": "all",
+          "clickThrough": "",
+          "compositeName": "dev-use1-eks-a",
+          "enabled": true,
+          "hideMembers": true,
+          "label": "COMPOSITE 6",
+          "members": [
+            {
+              "seriesName": "Prometheus dev-use1-eks-a.*"
+            }
+          ],
+          "newTabEnabled": true,
+          "sanitizeURLEnabled": true,
+          "sanitizedURL": "",
+          "showName": true,
+          "showValue": true,
+          "thresholdLevel": 0
+        },
+        {
+          "animateMode": "all",
+          "clickThrough": "",
+          "compositeName": "prd-use1-eks-b",
+          "enabled": true,
+          "hideMembers": true,
+          "label": "COMPOSITE 7",
+          "members": [
+            {
+              "seriesName": "Prometheus prd-use1-eks-b.*"
+            }
+          ],
+          "newTabEnabled": true,
+          "sanitizeURLEnabled": true,
+          "sanitizedURL": "",
+          "showName": true,
+          "showValue": true,
+          "thresholdLevel": 0
+        }
+      ],
+      "savedOverrides": [
+        {
+          "clickThrough": "",
+          "colors": [
+            "#299c46",
+            "#e5ac0e",
+            "#bf1b00",
+            "#ffffff"
+          ],
+          "decimals": "",
+          "enabled": true,
+          "label": "OVERRIDE 1",
+          "metricName": ".*Conntrack.*",
+          "newTabEnabled": true,
+          "operatorName": "avg",
+          "prefix": "",
+          "sanitizeURLEnabled": true,
+          "scaledDecimals": null,
+          "suffix": "",
+          "thresholds": [
+            {
+              "color": "#299c46",
+              "state": 0,
+              "value": 0
+            },
+            {
+              "color": "#e5ac0e",
+              "state": 1,
+              "value": 0.75
+            },
+            {
+              "color": "#bf1b00",
+              "state": 2,
+              "value": 0.95
+            }
+          ],
+          "unitFormat": "percentunit"
+        }
+      ],
+      "targets": [
+        {
+          "expr": "node_nf_conntrack_entries{job=\"node-exporter\"} / node_nf_conntrack_entries_limit{job=\"node-exporter\"}",
+          "interval": "",
+          "legendFormat": "$Datasource {{instance}} Conntrack Table Used",
+          "refId": "A"
+        }
+      ],
+      "timeFrom": null,
+      "timeShift": null,
+      "title": "Cluster nf_conntrack Table Usage",
+      "type": "grafana-polystat-panel",
+      "valueMaps": [
+        {
+          "op": "=",
+          "text": "N/A",
+          "value": "null"
+        }
+      ]
+    },
+    {
+      "colors": [
+        "#299c46",
+        "rgba(237, 129, 40, 0.89)",
+        "#d44a3a",
+        "#4040a0"
+      ],
+      "datasource": "$Datasource",
+      "fieldConfig": {
+        "defaults": {},
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 6,
+        "w": 4,
+        "x": 8,
+        "y": 1
+      },
+      "id": 8,
+      "mappingType": 1,
+      "mappingTypes": [
+        {
+          "name": "value to text",
+          "value": 1
+        },
+        {
+          "name": "range to text",
+          "value": 2
+        }
+      ],
+      "polystat": {
+        "animationSpeed": 2500,
+        "columnAutoSize": true,
+        "columns": "",
+        "defaultClickThrough": "",
+        "defaultClickThroughNewTab": false,
+        "defaultClickThroughSanitize": false,
+        "displayLimit": "",
+        "fontAutoColor": true,
+        "fontAutoScale": true,
+        "fontSize": 12,
+        "fontType": "Roboto",
+        "globalDecimals": 2,
+        "globalDisplayMode": "all",
+        "globalDisplayTextTriggeredEmpty": "OK",
+        "globalOperatorName": "avg",
+        "globalUnitFormat": "short",
+        "gradientEnabled": true,
+        "hexagonSortByDirection": 1,
+        "hexagonSortByField": "name",
+        "maxMetrics": 0,
+        "polygonBorderColor": "black",
+        "polygonBorderSize": 2,
+        "polygonGlobalFillColor": "#0a50a1",
+        "radius": "",
+        "radiusAutoSize": true,
+        "rowAutoSize": true,
+        "rows": "",
+        "shape": "hexagon_pointed_top",
+        "tooltipDisplayMode": "triggered",
+        "tooltipDisplayTextTriggeredEmpty": "OK",
+        "tooltipEnabled": true,
+        "tooltipFontSize": 12,
+        "tooltipFontType": "Roboto",
+        "tooltipPrimarySortDirection": 2,
+        "tooltipPrimarySortField": "thresholdLevel",
+        "tooltipSecondarySortDirection": 2,
+        "tooltipSecondarySortField": "value",
+        "tooltipTimestampEnabled": false,
+        "valueEnabled": true
+      },
+      "rangeMaps": [
+        {
+          "from": "null",
+          "text": "N/A",
+          "to": "null"
+        }
+      ],
+      "savedComposites": [
+        {
+          "animateMode": "triggered",
+          "clickThrough": "",
+          "compositeName": "us-iad-c",
+          "enabled": true,
+          "hideMembers": true,
+          "label": "COMPOSITE 1",
+          "members": [
+            {
+              "seriesName": "Prometheus us-iad-c.*"
+            }
+          ],
+          "newTabEnabled": true,
+          "sanitizeURLEnabled": true,
+          "sanitizedURL": "",
+          "showName": true,
+          "showValue": true,
+          "thresholdLevel": 0
+        },
+        {
+          "animateMode": "triggered",
+          "clickThrough": "",
+          "compositeName": "us-iad-a",
+          "enabled": true,
+          "hideMembers": true,
+          "label": "COMPOSITE 2",
+          "members": [
+            {
+              "seriesName": "Prometheus us-iad-a.*"
+            }
+          ],
+          "newTabEnabled": true,
+          "sanitizeURLEnabled": true,
+          "sanitizedURL": "",
+          "showName": true,
+          "showValue": true,
+          "thresholdLevel": 0
+        },
+        {
+          "animateMode": "triggered",
+          "clickThrough": "",
+          "compositeName": "us-iad-util-a",
+          "enabled": true,
+          "hideMembers": true,
+          "label": "COMPOSITE 3",
+          "members": [
+            {
+              "seriesName": "Prometheus us-iad-util-a.*"
+            }
+          ],
+          "newTabEnabled": true,
+          "sanitizeURLEnabled": true,
+          "sanitizedURL": "",
+          "showName": true,
+          "showValue": true,
+          "thresholdLevel": 0
+        },
+        {
+          "animateMode": "all",
+          "clickThrough": "",
+          "compositeName": "us-phx-a",
+          "enabled": true,
+          "hideMembers": true,
+          "label": "COMPOSITE 4",
+          "members": [
+            {
+              "seriesName": "Prometheus us-phx-a.*"
+            }
+          ],
+          "newTabEnabled": true,
+          "sanitizeURLEnabled": true,
+          "sanitizedURL": "",
+          "showName": true,
+          "showValue": true,
+          "thresholdLevel": 0
+        },
+        {
+          "animateMode": "all",
+          "clickThrough": "",
+          "compositeName": "us-phx-c",
+          "enabled": true,
+          "hideMembers": true,
+          "label": "COMPOSITE 5",
+          "members": [
+            {
+              "seriesName": "Prometheus us-phx-c.*"
+            }
+          ],
+          "newTabEnabled": true,
+          "sanitizeURLEnabled": true,
+          "sanitizedURL": "",
+          "showName": true,
+          "showValue": true,
+          "thresholdLevel": 0
+        },
+        {
+          "animateMode": "all",
+          "clickThrough": "",
+          "compositeName": "dev-use1-eks-a",
+          "enabled": true,
+          "hideMembers": true,
+          "label": "COMPOSITE 6",
+          "members": [
+            {
+              "seriesName": "Prometheus dev-use1-eks-a.*"
+            }
+          ],
+          "newTabEnabled": true,
+          "sanitizeURLEnabled": true,
+          "sanitizedURL": "",
+          "showName": true,
+          "showValue": true,
+          "thresholdLevel": 0
+        },
+        {
+          "animateMode": "all",
+          "clickThrough": "",
+          "compositeName": "prd-use1-eks-b",
+          "enabled": true,
+          "hideMembers": true,
+          "label": "COMPOSITE 7",
+          "members": [
+            {
+              "seriesName": "Prometheus prd-use1-eks-b.*"
+            }
+          ],
+          "newTabEnabled": true,
+          "sanitizeURLEnabled": true,
+          "sanitizedURL": "",
+          "showName": true,
+          "showValue": true,
+          "thresholdLevel": 0
+        }
+      ],
+      "savedOverrides": [
+        {
+          "clickThrough": "",
+          "colors": [
+            "#299c46",
+            "#e5ac0e",
+            "#bf1b00",
+            "#ffffff"
+          ],
+          "decimals": "",
+          "enabled": true,
+          "label": "OVERRIDE 1",
+          "metricName": ".*CPU.*",
+          "newTabEnabled": true,
+          "operatorName": "avg",
+          "prefix": "",
+          "sanitizeURLEnabled": true,
+          "scaledDecimals": null,
+          "suffix": "",
+          "thresholds": [
+            {
+              "color": "#299c46",
+              "state": 0,
+              "value": 0
+            },
+            {
+              "color": "#e5ac0e",
+              "state": 1,
+              "value": 0.75
+            },
+            {
+              "color": "#bf1b00",
+              "state": 2,
+              "value": 0.95
+            }
+          ],
+          "unitFormat": "percentunit"
+        }
+      ],
+      "targets": [
+        {
+          "expr": "instance:node_cpu:ratio",
+          "interval": "",
+          "legendFormat": "$Datasource {{instance}} CPU Used",
+          "refId": "A"
+        }
+      ],
+      "timeFrom": null,
+      "timeShift": null,
+      "title": "Cluster CPU Usage",
+      "type": "grafana-polystat-panel",
+      "valueMaps": [
+        {
+          "op": "=",
+          "text": "N/A",
+          "value": "null"
+        }
+      ]
+    },
+    {
+      "colors": [
+        "#299c46",
+        "rgba(237, 129, 40, 0.89)",
+        "#d44a3a",
+        "#4040a0"
+      ],
+      "datasource": "$Datasource",
+      "fieldConfig": {
+        "defaults": {},
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 6,
+        "w": 4,
+        "x": 12,
+        "y": 1
+      },
+      "id": 18,
+      "mappingType": 1,
+      "mappingTypes": [
+        {
+          "name": "value to text",
+          "value": 1
+        },
+        {
+          "name": "range to text",
+          "value": 2
+        }
+      ],
+      "polystat": {
+        "animationSpeed": 2500,
+        "columnAutoSize": true,
+        "columns": "",
+        "defaultClickThrough": "",
+        "defaultClickThroughNewTab": false,
+        "defaultClickThroughSanitize": false,
+        "displayLimit": "",
+        "fontAutoColor": true,
+        "fontAutoScale": true,
+        "fontSize": 12,
+        "fontType": "Roboto",
+        "globalDecimals": 2,
+        "globalDisplayMode": "all",
+        "globalDisplayTextTriggeredEmpty": "OK",
+        "globalOperatorName": "avg",
+        "globalUnitFormat": "short",
+        "gradientEnabled": true,
+        "hexagonSortByDirection": 1,
+        "hexagonSortByField": "name",
+        "maxMetrics": 0,
+        "polygonBorderColor": "black",
+        "polygonBorderSize": 2,
+        "polygonGlobalFillColor": "#0a50a1",
+        "radius": "",
+        "radiusAutoSize": true,
+        "rowAutoSize": true,
+        "rows": "",
+        "shape": "hexagon_pointed_top",
+        "tooltipDisplayMode": "triggered",
+        "tooltipDisplayTextTriggeredEmpty": "OK",
+        "tooltipEnabled": true,
+        "tooltipFontSize": 12,
+        "tooltipFontType": "Roboto",
+        "tooltipPrimarySortDirection": 2,
+        "tooltipPrimarySortField": "thresholdLevel",
+        "tooltipSecondarySortDirection": 2,
+        "tooltipSecondarySortField": "value",
+        "tooltipTimestampEnabled": false,
+        "valueEnabled": true
+      },
+      "rangeMaps": [
+        {
+          "from": "null",
+          "text": "N/A",
+          "to": "null"
+        }
+      ],
+      "savedComposites": [
+        {
+          "animateMode": "triggered",
+          "clickThrough": "",
+          "compositeName": "us-iad-c",
+          "enabled": true,
+          "hideMembers": true,
+          "label": "COMPOSITE 1",
+          "members": [
+            {
+              "seriesName": "Prometheus us-iad-c.*"
+            }
+          ],
+          "newTabEnabled": true,
+          "sanitizeURLEnabled": true,
+          "sanitizedURL": "",
+          "showName": true,
+          "showValue": true,
+          "thresholdLevel": 0
+        },
+        {
+          "animateMode": "triggered",
+          "clickThrough": "",
+          "compositeName": "us-iad-a",
+          "enabled": true,
+          "hideMembers": true,
+          "label": "COMPOSITE 2",
+          "members": [
+            {
+              "seriesName": "Prometheus us-iad-a.*"
+            }
+          ],
+          "newTabEnabled": true,
+          "sanitizeURLEnabled": true,
+          "sanitizedURL": "",
+          "showName": true,
+          "showValue": true,
+          "thresholdLevel": 0
+        },
+        {
+          "animateMode": "triggered",
+          "clickThrough": "",
+          "compositeName": "us-iad-util-a",
+          "enabled": true,
+          "hideMembers": true,
+          "label": "COMPOSITE 3",
+          "members": [
+            {
+              "seriesName": "Prometheus us-iad-util-a.*"
+            }
+          ],
+          "newTabEnabled": true,
+          "sanitizeURLEnabled": true,
+          "sanitizedURL": "",
+          "showName": true,
+          "showValue": true,
+          "thresholdLevel": 0
+        },
+        {
+          "animateMode": "all",
+          "clickThrough": "",
+          "compositeName": "us-phx-a",
+          "enabled": true,
+          "hideMembers": true,
+          "label": "COMPOSITE 4",
+          "members": [
+            {
+              "seriesName": "Prometheus us-phx-a.*"
+            }
+          ],
+          "newTabEnabled": true,
+          "sanitizeURLEnabled": true,
+          "sanitizedURL": "",
+          "showName": true,
+          "showValue": true,
+          "thresholdLevel": 0
+        },
+        {
+          "animateMode": "all",
+          "clickThrough": "",
+          "compositeName": "us-phx-c",
+          "enabled": true,
+          "hideMembers": true,
+          "label": "COMPOSITE 5",
+          "members": [
+            {
+              "seriesName": "Prometheus us-phx-c.*"
+            }
+          ],
+          "newTabEnabled": true,
+          "sanitizeURLEnabled": true,
+          "sanitizedURL": "",
+          "showName": true,
+          "showValue": true,
+          "thresholdLevel": 0
+        },
+        {
+          "animateMode": "all",
+          "clickThrough": "",
+          "compositeName": "dev-use1-eks-a",
+          "enabled": true,
+          "hideMembers": true,
+          "label": "COMPOSITE 6",
+          "members": [
+            {
+              "seriesName": "Prometheus dev-use1-eks-a.*"
+            }
+          ],
+          "newTabEnabled": true,
+          "sanitizeURLEnabled": true,
+          "sanitizedURL": "",
+          "showName": true,
+          "showValue": true,
+          "thresholdLevel": 0
+        },
+        {
+          "animateMode": "all",
+          "clickThrough": "",
+          "compositeName": "prd-use1-eks-b",
+          "enabled": true,
+          "hideMembers": true,
+          "label": "COMPOSITE 7",
+          "members": [
+            {
+              "seriesName": "Prometheus prd-use1-eks-b.*"
+            }
+          ],
+          "newTabEnabled": true,
+          "sanitizeURLEnabled": true,
+          "sanitizedURL": "",
+          "showName": true,
+          "showValue": true,
+          "thresholdLevel": 0
+        }
+      ],
+      "savedOverrides": [
+        {
+          "clickThrough": "",
+          "colors": [
+            "#299c46",
+            "#e5ac0e",
+            "#bf1b00",
+            "#ffffff"
+          ],
+          "decimals": "",
+          "enabled": true,
+          "label": "OVERRIDE 1",
+          "metricName": ".*Memory.*",
+          "newTabEnabled": true,
+          "operatorName": "avg",
+          "prefix": "",
+          "sanitizeURLEnabled": true,
+          "scaledDecimals": null,
+          "suffix": "",
+          "thresholds": [
+            {
+              "color": "#299c46",
+              "state": 0,
+              "value": 0
+            },
+            {
+              "color": "#e5ac0e",
+              "state": 1,
+              "value": 0.75
+            },
+            {
+              "color": "#bf1b00",
+              "state": 2,
+              "value": 0.95
+            }
+          ],
+          "unitFormat": "percentunit"
+        }
+      ],
+      "targets": [
+        {
+          "expr": "node:node_memory_utilisation:ratio",
+          "interval": "",
+          "legendFormat": "$Datasource {{node}} Memory Used",
+          "refId": "A"
+        }
+      ],
+      "timeFrom": null,
+      "timeShift": null,
+      "title": "Cluster Memory Usage",
+      "type": "grafana-polystat-panel",
+      "valueMaps": [
+        {
+          "op": "=",
+          "text": "N/A",
+          "value": "null"
+        }
+      ]
+    },
+    {
+      "colors": [
+        "#299c46",
+        "rgba(237, 129, 40, 0.89)",
+        "#d44a3a",
+        "#4040a0"
+      ],
+      "datasource": "$Datasource",
+      "fieldConfig": {
+        "defaults": {},
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 6,
+        "w": 4,
+        "x": 16,
+        "y": 1
+      },
+      "id": 22,
+      "mappingType": 1,
+      "mappingTypes": [
+        {
+          "name": "value to text",
+          "value": 1
+        },
+        {
+          "name": "range to text",
+          "value": 2
+        }
+      ],
+      "polystat": {
+        "animationSpeed": 2500,
+        "columnAutoSize": true,
+        "columns": "",
+        "defaultClickThrough": "",
+        "defaultClickThroughNewTab": false,
+        "defaultClickThroughSanitize": false,
+        "displayLimit": "",
+        "fontAutoColor": true,
+        "fontAutoScale": true,
+        "fontSize": 12,
+        "fontType": "Roboto",
+        "globalDecimals": 2,
+        "globalDisplayMode": "all",
+        "globalDisplayTextTriggeredEmpty": "OK",
+        "globalOperatorName": "avg",
+        "globalUnitFormat": "short",
+        "gradientEnabled": true,
+        "hexagonSortByDirection": 1,
+        "hexagonSortByField": "name",
+        "maxMetrics": 0,
+        "polygonBorderColor": "black",
+        "polygonBorderSize": 2,
+        "polygonGlobalFillColor": "#0a50a1",
+        "radius": "",
+        "radiusAutoSize": true,
+        "rowAutoSize": true,
+        "rows": "",
+        "shape": "hexagon_pointed_top",
+        "tooltipDisplayMode": "triggered",
+        "tooltipDisplayTextTriggeredEmpty": "OK",
+        "tooltipEnabled": true,
+        "tooltipFontSize": 12,
+        "tooltipFontType": "Roboto",
+        "tooltipPrimarySortDirection": 2,
+        "tooltipPrimarySortField": "thresholdLevel",
+        "tooltipSecondarySortDirection": 2,
+        "tooltipSecondarySortField": "value",
+        "tooltipTimestampEnabled": false,
+        "valueEnabled": true
+      },
+      "rangeMaps": [
+        {
+          "from": "null",
+          "text": "N/A",
+          "to": "null"
+        }
+      ],
+      "savedComposites": [
+        {
+          "animateMode": "triggered",
+          "clickThrough": "",
+          "compositeName": "us-iad-c",
+          "enabled": true,
+          "hideMembers": true,
+          "label": "COMPOSITE 1",
+          "members": [
+            {
+              "seriesName": "Prometheus us-iad-c.*"
+            }
+          ],
+          "newTabEnabled": true,
+          "sanitizeURLEnabled": true,
+          "sanitizedURL": "",
+          "showName": true,
+          "showValue": true,
+          "thresholdLevel": 0
+        },
+        {
+          "animateMode": "triggered",
+          "clickThrough": "",
+          "compositeName": "us-iad-a",
+          "enabled": true,
+          "hideMembers": true,
+          "label": "COMPOSITE 2",
+          "members": [
+            {
+              "seriesName": "Prometheus us-iad-a.*"
+            }
+          ],
+          "newTabEnabled": true,
+          "sanitizeURLEnabled": true,
+          "sanitizedURL": "",
+          "showName": true,
+          "showValue": true,
+          "thresholdLevel": 0
+        },
+        {
+          "animateMode": "triggered",
+          "clickThrough": "",
+          "compositeName": "us-iad-util-a",
+          "enabled": true,
+          "hideMembers": true,
+          "label": "COMPOSITE 3",
+          "members": [
+            {
+              "seriesName": "Prometheus us-iad-util-a.*"
+            }
+          ],
+          "newTabEnabled": true,
+          "sanitizeURLEnabled": true,
+          "sanitizedURL": "",
+          "showName": true,
+          "showValue": true,
+          "thresholdLevel": 0
+        },
+        {
+          "animateMode": "all",
+          "clickThrough": "",
+          "compositeName": "us-phx-a",
+          "enabled": true,
+          "hideMembers": true,
+          "label": "COMPOSITE 4",
+          "members": [
+            {
+              "seriesName": "Prometheus us-phx-a.*"
+            }
+          ],
+          "newTabEnabled": true,
+          "sanitizeURLEnabled": true,
+          "sanitizedURL": "",
+          "showName": true,
+          "showValue": true,
+          "thresholdLevel": 0
+        },
+        {
+          "animateMode": "all",
+          "clickThrough": "",
+          "compositeName": "us-phx-c",
+          "enabled": true,
+          "hideMembers": true,
+          "label": "COMPOSITE 5",
+          "members": [
+            {
+              "seriesName": "Prometheus us-phx-c.*"
+            }
+          ],
+          "newTabEnabled": true,
+          "sanitizeURLEnabled": true,
+          "sanitizedURL": "",
+          "showName": true,
+          "showValue": true,
+          "thresholdLevel": 0
+        },
+        {
+          "animateMode": "all",
+          "clickThrough": "",
+          "compositeName": "dev-use1-eks-a",
+          "enabled": true,
+          "hideMembers": true,
+          "label": "COMPOSITE 6",
+          "members": [
+            {
+              "seriesName": "Prometheus dev-use1-eks-a.*"
+            }
+          ],
+          "newTabEnabled": true,
+          "sanitizeURLEnabled": true,
+          "sanitizedURL": "",
+          "showName": true,
+          "showValue": true,
+          "thresholdLevel": 0
+        },
+        {
+          "animateMode": "all",
+          "clickThrough": "",
+          "compositeName": "prd-use1-eks-b",
+          "enabled": true,
+          "hideMembers": true,
+          "label": "COMPOSITE 7",
+          "members": [
+            {
+              "seriesName": "Prometheus prd-use1-eks-b.*"
+            }
+          ],
+          "newTabEnabled": true,
+          "sanitizeURLEnabled": true,
+          "sanitizedURL": "",
+          "showName": true,
+          "showValue": true,
+          "thresholdLevel": 0
+        }
+      ],
+      "savedOverrides": [
+        {
+          "clickThrough": "",
+          "colors": [
+            "#299c46",
+            "#e5ac0e",
+            "#bf1b00",
+            "#ffffff"
+          ],
+          "decimals": "",
+          "enabled": true,
+          "label": "OVERRIDE 1",
+          "metricName": ".*Filesystem.*",
+          "newTabEnabled": true,
+          "operatorName": "avg",
+          "prefix": "",
+          "sanitizeURLEnabled": true,
+          "scaledDecimals": null,
+          "suffix": "",
+          "thresholds": [
+            {
+              "color": "#299c46",
+              "state": 0,
+              "value": 0
+            },
+            {
+              "color": "#e5ac0e",
+              "state": 1,
+              "value": 0.75
+            },
+            {
+              "color": "#bf1b00",
+              "state": 2,
+              "value": 0.95
+            }
+          ],
+          "unitFormat": "percentunit"
+        }
+      ],
+      "targets": [
+        {
+          "expr": "node:node_filesystem_usage:",
+          "interval": "",
+          "legendFormat": "$Datasource {{instance}} Filesystem Used",
+          "refId": "A"
+        }
+      ],
+      "timeFrom": null,
+      "timeShift": null,
+      "title": "Cluster Filesystem Usage",
+      "type": "grafana-polystat-panel",
+      "valueMaps": [
+        {
+          "op": "=",
+          "text": "N/A",
+          "value": "null"
+        }
+      ]
+    },
+    {
+      "collapsed": false,
+      "datasource": null,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 7
+      },
+      "id": 12,
+      "panels": [],
+      "title": "Node Status",
+      "type": "row"
+    },
+    {
+      "colors": [
+        "#299c46",
+        "rgba(237, 129, 40, 0.89)",
+        "#d44a3a",
+        "#4040a0"
+      ],
+      "datasource": "$Datasource",
+      "fieldConfig": {
+        "defaults": {},
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 11,
+        "w": 8,
+        "x": 0,
+        "y": 8
+      },
+      "id": 2,
+      "mappingType": 1,
+      "mappingTypes": [
+        {
+          "name": "value to text",
+          "value": 1
+        },
+        {
+          "name": "range to text",
+          "value": 2
+        }
+      ],
+      "polystat": {
+        "animationSpeed": 2500,
+        "columnAutoSize": true,
+        "columns": "",
+        "defaultClickThrough": "",
+        "defaultClickThroughNewTab": false,
+        "defaultClickThroughSanitize": false,
+        "displayLimit": "",
+        "fontAutoColor": true,
+        "fontAutoScale": true,
+        "fontSize": 12,
+        "fontType": "Roboto",
+        "globalDecimals": 2,
+        "globalDisplayMode": "all",
+        "globalDisplayTextTriggeredEmpty": "OK",
+        "globalOperatorName": "max",
+        "globalUnitFormat": "none",
+        "gradientEnabled": true,
+        "hexagonSortByDirection": 1,
+        "hexagonSortByField": "name",
+        "maxMetrics": 0,
+        "polygonBorderColor": "black",
+        "polygonBorderSize": 2,
+        "polygonGlobalFillColor": "#0a50a1",
+        "radius": "",
+        "radiusAutoSize": true,
+        "rowAutoSize": true,
+        "rows": "",
+        "shape": "hexagon_pointed_top",
+        "tooltipDisplayMode": "all",
+        "tooltipDisplayTextTriggeredEmpty": "OK",
+        "tooltipEnabled": true,
+        "tooltipFontSize": 12,
+        "tooltipFontType": "Roboto",
+        "tooltipPrimarySortDirection": 2,
+        "tooltipPrimarySortField": "thresholdLevel",
+        "tooltipSecondarySortDirection": 2,
+        "tooltipSecondarySortField": "value",
+        "tooltipTimestampEnabled": false,
+        "valueEnabled": true
+      },
+      "rangeMaps": [
+        {
+          "from": "null",
+          "text": "N/A",
+          "to": "null"
+        }
+      ],
+      "savedComposites": [],
+      "savedOverrides": [
+        {
+          "clickThrough": "",
+          "colors": [
+            "#299c46",
+            "#e5ac0e",
+            "#bf1b00",
+            "#ffffff"
+          ],
+          "decimals": null,
+          "enabled": true,
+          "label": "OVERRIDE 1",
+          "metricName": ".*DNS.*",
+          "newTabEnabled": true,
+          "operatorName": "max",
+          "prefix": "",
+          "sanitizeURLEnabled": true,
+          "scaledDecimals": null,
+          "suffix": "",
+          "thresholds": [
+            {
+              "color": "#299c46",
+              "state": 0,
+              "value": 0
+            },
+            {
+              "color": "#e5ac0e",
+              "state": 1,
+              "value": 1
+            },
+            {
+              "color": "#bf1b00",
+              "state": 2,
+              "value": 5
+            }
+          ],
+          "unitFormat": "s"
+        },
+        {
+          "clickThrough": "",
+          "colors": [
+            "#299c46",
+            "#e5ac0e",
+            "#bf1b00",
+            "#ffffff"
+          ],
+          "decimals": 0,
+          "enabled": true,
+          "label": "OVERRIDE 2",
+          "metricName": ".*HTTP.*",
+          "newTabEnabled": true,
+          "operatorName": "avg",
+          "prefix": "",
+          "sanitizeURLEnabled": true,
+          "scaledDecimals": null,
+          "suffix": "",
+          "thresholds": [
+            {
+              "color": "#299c46",
+              "state": 0,
+              "value": 200
+            },
+            {
+              "color": "#e5ac0e",
+              "state": 1,
+              "value": 400
+            },
+            {
+              "color": "#bf1b00",
+              "state": 2,
+              "value": 500
+            }
+          ],
+          "unitFormat": "none"
+        },
+        {
+          "clickThrough": "",
+          "colors": [
+            "#299c46",
+            "#e5ac0e",
+            "#bf1b00",
+            "#ffffff"
+          ],
+          "decimals": 0,
+          "enabled": true,
+          "label": "OVERRIDE 3",
+          "metricName": ".*Success",
+          "newTabEnabled": true,
+          "operatorName": "min",
+          "prefix": "",
+          "sanitizeURLEnabled": true,
+          "scaledDecimals": null,
+          "suffix": "",
+          "thresholds": [
+            {
+              "color": "#bf1b00",
+              "state": 2,
+              "value": 0
+            },
+            {
+              "color": "#299c46",
+              "state": 0,
+              "value": 1
+            }
+          ],
+          "unitFormat": "none"
+        }
+      ],
+      "targets": [
+        {
+          "expr": "federate:probe_dns_lookup_time_seconds",
+          "interval": "",
+          "intervalFactor": 2,
+          "legendFormat": "{{kubernetes_pod_node_name}} DNS Lookup Time",
+          "refId": "A"
+        },
+        {
+          "expr": "federate:probe_success{job=~\".*external\"}",
+          "interval": "",
+          "intervalFactor": 2,
+          "legendFormat": "{{kubernetes_pod_node_name}} External Success",
+          "refId": "C"
+        },
+        {
+          "expr": "federate:probe_success{job=~\".*dex\"}",
+          "interval": "",
+          "intervalFactor": 2,
+          "legendFormat": "{{kubernetes_pod_node_name}} Internal Success",
+          "refId": "D"
+        }
+      ],
+      "timeFrom": null,
+      "timeShift": null,
+      "title": "Node Network Checks",
+      "type": "grafana-polystat-panel",
+      "valueMaps": [
+        {
+          "op": "=",
+          "text": "N/A",
+          "value": "null"
+        }
+      ]
+    },
+    {
+      "colors": [
+        "#299c46",
+        "rgba(237, 129, 40, 0.89)",
+        "#d44a3a",
+        "#4040a0"
+      ],
+      "datasource": "$Datasource",
+      "fieldConfig": {
+        "defaults": {},
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 11,
+        "w": 8,
+        "x": 8,
+        "y": 8
+      },
+      "id": 5,
+      "mappingType": 1,
+      "mappingTypes": [
+        {
+          "name": "value to text",
+          "value": 1
+        },
+        {
+          "name": "range to text",
+          "value": 2
+        }
+      ],
+      "polystat": {
+        "animationSpeed": 2500,
+        "columnAutoSize": true,
+        "columns": "",
+        "defaultClickThrough": "",
+        "defaultClickThroughNewTab": false,
+        "defaultClickThroughSanitize": false,
+        "displayLimit": "",
+        "fontAutoColor": true,
+        "fontAutoScale": true,
+        "fontSize": 12,
+        "fontType": "Roboto",
+        "globalDecimals": 2,
+        "globalDisplayMode": "all",
+        "globalDisplayTextTriggeredEmpty": "OK",
+        "globalOperatorName": "avg",
+        "globalUnitFormat": "short",
+        "gradientEnabled": true,
+        "hexagonSortByDirection": 1,
+        "hexagonSortByField": "name",
+        "maxMetrics": 0,
+        "polygonBorderColor": "black",
+        "polygonBorderSize": 2,
+        "polygonGlobalFillColor": "#0a50a1",
+        "radius": "",
+        "radiusAutoSize": true,
+        "rowAutoSize": true,
+        "rows": "",
+        "shape": "hexagon_pointed_top",
+        "tooltipDisplayMode": "all",
+        "tooltipDisplayTextTriggeredEmpty": "OK",
+        "tooltipEnabled": true,
+        "tooltipFontSize": 12,
+        "tooltipFontType": "Roboto",
+        "tooltipPrimarySortDirection": 2,
+        "tooltipPrimarySortField": "thresholdLevel",
+        "tooltipSecondarySortDirection": 2,
+        "tooltipSecondarySortField": "value",
+        "tooltipTimestampEnabled": false,
+        "valueEnabled": true
+      },
+      "rangeMaps": [
+        {
+          "from": "null",
+          "text": "N/A",
+          "to": "null"
+        }
+      ],
+      "savedComposites": [],
+      "savedOverrides": [
+        {
+          "clickThrough": "",
+          "colors": [
+            "#299c46",
+            "#e5ac0e",
+            "#bf1b00",
+            "#ffffff"
+          ],
+          "decimals": "",
+          "enabled": true,
+          "label": "OVERRIDE 1",
+          "metricName": ".*Conntrack.*",
+          "newTabEnabled": true,
+          "operatorName": "avg",
+          "prefix": "",
+          "sanitizeURLEnabled": true,
+          "scaledDecimals": null,
+          "suffix": "",
+          "thresholds": [
+            {
+              "color": "#299c46",
+              "state": 0,
+              "value": 0
+            },
+            {
+              "color": "#e5ac0e",
+              "state": 1,
+              "value": 0.75
+            },
+            {
+              "color": "#bf1b00",
+              "state": 2,
+              "value": 0.95
+            }
+          ],
+          "unitFormat": "percentunit"
+        }
+      ],
+      "targets": [
+        {
+          "expr": "node_nf_conntrack_entries{job=\"node-exporter\"} / node_nf_conntrack_entries_limit{job=\"node-exporter\"}",
+          "interval": "",
+          "legendFormat": "$Datasource {{instance}} Conntrack Table Used",
+          "refId": "A"
+        }
+      ],
+      "timeFrom": null,
+      "timeShift": null,
+      "title": "Node nf_conntrack Table Usage",
+      "type": "grafana-polystat-panel",
+      "valueMaps": [
+        {
+          "op": "=",
+          "text": "N/A",
+          "value": "null"
+        }
+      ]
+    },
+    {
+      "colors": [
+        "#299c46",
+        "rgba(237, 129, 40, 0.89)",
+        "#d44a3a",
+        "#4040a0"
+      ],
+      "datasource": "$Datasource",
+      "fieldConfig": {
+        "defaults": {},
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 11,
+        "w": 8,
+        "x": 16,
+        "y": 8
+      },
+      "id": 7,
+      "mappingType": 1,
+      "mappingTypes": [
+        {
+          "name": "value to text",
+          "value": 1
+        },
+        {
+          "name": "range to text",
+          "value": 2
+        }
+      ],
+      "polystat": {
+        "animationSpeed": 2500,
+        "columnAutoSize": true,
+        "columns": "",
+        "defaultClickThrough": "",
+        "defaultClickThroughNewTab": false,
+        "defaultClickThroughSanitize": false,
+        "displayLimit": "",
+        "fontAutoColor": true,
+        "fontAutoScale": true,
+        "fontSize": 12,
+        "fontType": "Roboto",
+        "globalDecimals": 2,
+        "globalDisplayMode": "all",
+        "globalDisplayTextTriggeredEmpty": "OK",
+        "globalOperatorName": "avg",
+        "globalUnitFormat": "short",
+        "gradientEnabled": true,
+        "hexagonSortByDirection": 1,
+        "hexagonSortByField": "name",
+        "maxMetrics": 0,
+        "polygonBorderColor": "black",
+        "polygonBorderSize": 2,
+        "polygonGlobalFillColor": "#0a50a1",
+        "radius": "",
+        "radiusAutoSize": true,
+        "rowAutoSize": true,
+        "rows": "",
+        "shape": "hexagon_pointed_top",
+        "tooltipDisplayMode": "all",
+        "tooltipDisplayTextTriggeredEmpty": "OK",
+        "tooltipEnabled": true,
+        "tooltipFontSize": 12,
+        "tooltipFontType": "Roboto",
+        "tooltipPrimarySortDirection": 2,
+        "tooltipPrimarySortField": "thresholdLevel",
+        "tooltipSecondarySortDirection": 2,
+        "tooltipSecondarySortField": "value",
+        "tooltipTimestampEnabled": false,
+        "valueEnabled": true
+      },
+      "rangeMaps": [
+        {
+          "from": "null",
+          "text": "N/A",
+          "to": "null"
+        }
+      ],
+      "savedComposites": [],
+      "savedOverrides": [
+        {
+          "clickThrough": "",
+          "colors": [
+            "#299c46",
+            "#e5ac0e",
+            "#bf1b00",
+            "#ffffff"
+          ],
+          "decimals": "",
+          "enabled": true,
+          "label": "OVERRIDE 1",
+          "metricName": ".*CPU.*",
+          "newTabEnabled": true,
+          "operatorName": "avg",
+          "prefix": "",
+          "sanitizeURLEnabled": true,
+          "scaledDecimals": null,
+          "suffix": "",
+          "thresholds": [
+            {
+              "color": "#299c46",
+              "state": 0,
+              "value": 0
+            },
+            {
+              "color": "#e5ac0e",
+              "state": 1,
+              "value": 0.75
+            },
+            {
+              "color": "#bf1b00",
+              "state": 2,
+              "value": 0.95
+            }
+          ],
+          "unitFormat": "percentunit"
+        }
+      ],
+      "targets": [
+        {
+          "expr": "node:node_cpu_utilisation:avg1m",
+          "interval": "",
+          "legendFormat": "$Datasource {{node}} CPU Used",
+          "refId": "A"
+        }
+      ],
+      "timeFrom": null,
+      "timeShift": null,
+      "title": "Node CPU Usage",
+      "type": "grafana-polystat-panel",
+      "valueMaps": [
+        {
+          "op": "=",
+          "text": "N/A",
+          "value": "null"
+        }
+      ]
+    },
+    {
+      "colors": [
+        "#299c46",
+        "rgba(237, 129, 40, 0.89)",
+        "#d44a3a",
+        "#4040a0"
+      ],
+      "datasource": "$Datasource",
+      "fieldConfig": {
+        "defaults": {},
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 11,
+        "w": 12,
+        "x": 0,
+        "y": 19
+      },
+      "id": 20,
+      "mappingType": 1,
+      "mappingTypes": [
+        {
+          "name": "value to text",
+          "value": 1
+        },
+        {
+          "name": "range to text",
+          "value": 2
+        }
+      ],
+      "polystat": {
+        "animationSpeed": 2500,
+        "columnAutoSize": true,
+        "columns": "",
+        "defaultClickThrough": "",
+        "defaultClickThroughNewTab": false,
+        "defaultClickThroughSanitize": false,
+        "displayLimit": "",
+        "fontAutoColor": true,
+        "fontAutoScale": true,
+        "fontSize": 12,
+        "fontType": "Roboto",
+        "globalDecimals": 2,
+        "globalDisplayMode": "all",
+        "globalDisplayTextTriggeredEmpty": "OK",
+        "globalOperatorName": "avg",
+        "globalUnitFormat": "short",
+        "gradientEnabled": true,
+        "hexagonSortByDirection": 1,
+        "hexagonSortByField": "name",
+        "maxMetrics": 0,
+        "polygonBorderColor": "black",
+        "polygonBorderSize": 2,
+        "polygonGlobalFillColor": "#0a50a1",
+        "radius": "",
+        "radiusAutoSize": true,
+        "rowAutoSize": true,
+        "rows": "",
+        "shape": "hexagon_pointed_top",
+        "tooltipDisplayMode": "all",
+        "tooltipDisplayTextTriggeredEmpty": "OK",
+        "tooltipEnabled": true,
+        "tooltipFontSize": 12,
+        "tooltipFontType": "Roboto",
+        "tooltipPrimarySortDirection": 2,
+        "tooltipPrimarySortField": "thresholdLevel",
+        "tooltipSecondarySortDirection": 2,
+        "tooltipSecondarySortField": "value",
+        "tooltipTimestampEnabled": false,
+        "valueEnabled": true
+      },
+      "rangeMaps": [
+        {
+          "from": "null",
+          "text": "N/A",
+          "to": "null"
+        }
+      ],
+      "savedComposites": [],
+      "savedOverrides": [
+        {
+          "clickThrough": "",
+          "colors": [
+            "#299c46",
+            "#e5ac0e",
+            "#bf1b00",
+            "#ffffff"
+          ],
+          "decimals": "",
+          "enabled": true,
+          "label": "OVERRIDE 1",
+          "metricName": ".*Memory.*",
+          "newTabEnabled": true,
+          "operatorName": "avg",
+          "prefix": "",
+          "sanitizeURLEnabled": true,
+          "scaledDecimals": null,
+          "suffix": "",
+          "thresholds": [
+            {
+              "color": "#299c46",
+              "state": 0,
+              "value": 0
+            },
+            {
+              "color": "#e5ac0e",
+              "state": 1,
+              "value": 0.75
+            },
+            {
+              "color": "#bf1b00",
+              "state": 2,
+              "value": 0.95
+            }
+          ],
+          "unitFormat": "percentunit"
+        }
+      ],
+      "targets": [
+        {
+          "expr": "node:node_memory_utilisation:ratio",
+          "interval": "",
+          "legendFormat": "$Datasource {{node}} Memory Used",
+          "refId": "A"
+        }
+      ],
+      "timeFrom": null,
+      "timeShift": null,
+      "title": "Node Memory Usage",
+      "type": "grafana-polystat-panel",
+      "valueMaps": [
+        {
+          "op": "=",
+          "text": "N/A",
+          "value": "null"
+        }
+      ]
+    },
+    {
+      "colors": [
+        "#299c46",
+        "rgba(237, 129, 40, 0.89)",
+        "#d44a3a",
+        "#4040a0"
+      ],
+      "datasource": "$Datasource",
+      "fieldConfig": {
+        "defaults": {},
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 11,
+        "w": 12,
+        "x": 12,
+        "y": 19
+      },
+      "id": 17,
+      "mappingType": 1,
+      "mappingTypes": [
+        {
+          "name": "value to text",
+          "value": 1
+        },
+        {
+          "name": "range to text",
+          "value": 2
+        }
+      ],
+      "polystat": {
+        "animationSpeed": 2500,
+        "columnAutoSize": true,
+        "columns": "",
+        "defaultClickThrough": "",
+        "defaultClickThroughNewTab": false,
+        "defaultClickThroughSanitize": false,
+        "displayLimit": "",
+        "fontAutoColor": true,
+        "fontAutoScale": true,
+        "fontSize": 12,
+        "fontType": "Roboto",
+        "globalDecimals": 2,
+        "globalDisplayMode": "all",
+        "globalDisplayTextTriggeredEmpty": "OK",
+        "globalOperatorName": "avg",
+        "globalUnitFormat": "short",
+        "gradientEnabled": true,
+        "hexagonSortByDirection": 1,
+        "hexagonSortByField": "name",
+        "maxMetrics": 0,
+        "polygonBorderColor": "black",
+        "polygonBorderSize": 2,
+        "polygonGlobalFillColor": "#0a50a1",
+        "radius": "",
+        "radiusAutoSize": true,
+        "rowAutoSize": true,
+        "rows": "",
+        "shape": "hexagon_pointed_top",
+        "tooltipDisplayMode": "all",
+        "tooltipDisplayTextTriggeredEmpty": "OK",
+        "tooltipEnabled": true,
+        "tooltipFontSize": 12,
+        "tooltipFontType": "Roboto",
+        "tooltipPrimarySortDirection": 2,
+        "tooltipPrimarySortField": "thresholdLevel",
+        "tooltipSecondarySortDirection": 2,
+        "tooltipSecondarySortField": "value",
+        "tooltipTimestampEnabled": false,
+        "valueEnabled": true
+      },
+      "rangeMaps": [
+        {
+          "from": "null",
+          "text": "N/A",
+          "to": "null"
+        }
+      ],
+      "savedComposites": [],
+      "savedOverrides": [
+        {
+          "clickThrough": "",
+          "colors": [
+            "#299c46",
+            "#e5ac0e",
+            "#bf1b00",
+            "#ffffff"
+          ],
+          "decimals": "",
+          "enabled": true,
+          "label": "OVERRIDE 1",
+          "metricName": ".*CPU.*",
+          "newTabEnabled": true,
+          "operatorName": "avg",
+          "prefix": "",
+          "sanitizeURLEnabled": true,
+          "scaledDecimals": null,
+          "suffix": "",
+          "thresholds": [
+            {
+              "color": "#299c46",
+              "state": 0,
+              "value": 0
+            },
+            {
+              "color": "#e5ac0e",
+              "state": 1,
+              "value": 0.75
+            },
+            {
+              "color": "#bf1b00",
+              "state": 2,
+              "value": 0.95
+            }
+          ],
+          "unitFormat": "percentunit"
+        }
+      ],
+      "targets": [
+        {
+          "expr": "node:node_filesystem_usage:{namespace=\"operators\"}",
+          "interval": "",
+          "legendFormat": "$Datasource {{instance}} CPU Used",
+          "refId": "A"
+        }
+      ],
+      "timeFrom": null,
+      "timeShift": null,
+      "title": "Node Filesystem Usage",
+      "type": "grafana-polystat-panel",
+      "valueMaps": [
+        {
+          "op": "=",
+          "text": "N/A",
+          "value": "null"
+        }
+      ]
+    },
+    {
+      "collapsed": false,
+      "datasource": null,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 30
+      },
+      "id": 16,
+      "panels": [],
+      "title": "Node Histroy",
+      "type": "row"
+    },
+    {
+      "aliasColors": {},
+      "bars": false,
+      "dashLength": 10,
+      "dashes": false,
+      "datasource": "$Datasource",
+      "fieldConfig": {
+        "defaults": {},
+        "overrides": []
+      },
+      "fill": 1,
+      "fillGradient": 0,
+      "gridPos": {
+        "h": 12,
+        "w": 12,
+        "x": 0,
+        "y": 31
+      },
+      "hiddenSeries": false,
+      "id": 14,
+      "legend": {
+        "avg": false,
+        "current": false,
+        "max": false,
+        "min": false,
+        "show": true,
+        "total": false,
+        "values": false
+      },
+      "lines": true,
+      "linewidth": 1,
+      "nullPointMode": "null",
+      "options": {
+        "alertThreshold": true
+      },
+      "percentage": false,
+      "pluginVersion": "7.5.4",
+      "pointradius": 2,
+      "points": false,
+      "renderer": "flot",
+      "seriesOverrides": [],
+      "spaceLength": 10,
+      "stack": false,
+      "steppedLine": false,
+      "targets": [
+        {
+          "expr": "federate:probe_dns_lookup_time_seconds",
+          "interval": "",
+          "intervalFactor": 2,
+          "legendFormat": "{{kubernetes_pod_node_name}} {{instance}} DNS Lookup Time",
+          "refId": "A"
+        }
+      ],
+      "thresholds": [],
+      "timeFrom": null,
+      "timeRegions": [],
+      "timeShift": null,
+      "title": "Node Network Checks",
+      "tooltip": {
+        "shared": true,
+        "sort": 2,
+        "value_type": "individual"
+      },
+      "type": "graph",
+      "xaxis": {
+        "buckets": null,
+        "mode": "time",
+        "name": null,
+        "show": true,
+        "values": []
+      },
+      "yaxes": [
+        {
+          "format": "s",
+          "label": null,
+          "logBase": 1,
+          "max": null,
+          "min": null,
+          "show": true
+        },
+        {
+          "format": "short",
+          "label": null,
+          "logBase": 1,
+          "max": null,
+          "min": null,
+          "show": true
+        }
+      ],
+      "yaxis": {
+        "align": false,
+        "alignLevel": null
+      }
+    },
+    {
+      "aliasColors": {},
+      "bars": false,
+      "dashLength": 10,
+      "dashes": false,
+      "datasource": "$Datasource",
+      "fieldConfig": {
+        "defaults": {},
+        "overrides": []
+      },
+      "fill": 1,
+      "fillGradient": 0,
+      "gridPos": {
+        "h": 12,
+        "w": 12,
+        "x": 12,
+        "y": 31
+      },
+      "hiddenSeries": false,
+      "id": 21,
+      "legend": {
+        "avg": false,
+        "current": false,
+        "max": false,
+        "min": false,
+        "show": true,
+        "total": false,
+        "values": false
+      },
+      "lines": true,
+      "linewidth": 1,
+      "nullPointMode": "null",
+      "options": {
+        "alertThreshold": true
+      },
+      "percentage": false,
+      "pluginVersion": "7.5.4",
+      "pointradius": 2,
+      "points": false,
+      "renderer": "flot",
+      "seriesOverrides": [],
+      "spaceLength": 10,
+      "stack": false,
+      "steppedLine": false,
+      "targets": [
+        {
+          "expr": "node:node_filesystem_usage:{namespace=\"operators\"}",
+          "interval": "",
+          "legendFormat": "$Datasource {{instance}}",
+          "refId": "A"
+        }
+      ],
+      "thresholds": [
+        {
+          "colorMode": "critical",
+          "fill": true,
+          "line": true,
+          "op": "gt",
+          "yaxis": "left"
+        }
+      ],
+      "timeFrom": null,
+      "timeRegions": [],
+      "timeShift": null,
+      "title": "Node Filesystem Usage",
+      "tooltip": {
+        "shared": true,
+        "sort": 2,
+        "value_type": "individual"
+      },
+      "type": "graph",
+      "xaxis": {
+        "buckets": null,
+        "mode": "time",
+        "name": null,
+        "show": true,
+        "values": []
+      },
+      "yaxes": [
+        {
+          "decimals": 0,
+          "format": "percentunit",
+          "label": null,
+          "logBase": 1,
+          "max": null,
+          "min": null,
+          "show": true
+        },
+        {
+          "format": "short",
+          "label": null,
+          "logBase": 1,
+          "max": null,
+          "min": null,
+          "show": true
+        }
+      ],
+      "yaxis": {
+        "align": false,
+        "alignLevel": null
+      }
+    },
+    {
+      "aliasColors": {},
+      "bars": false,
+      "dashLength": 10,
+      "dashes": false,
+      "datasource": "$Datasource",
+      "fieldConfig": {
+        "defaults": {},
+        "overrides": []
+      },
+      "fill": 1,
+      "fillGradient": 0,
+      "gridPos": {
+        "h": 11,
+        "w": 12,
+        "x": 0,
+        "y": 43
+      },
+      "hiddenSeries": false,
+      "id": 19,
+      "legend": {
+        "avg": false,
+        "current": false,
+        "max": false,
+        "min": false,
+        "show": true,
+        "total": false,
+        "values": false
+      },
+      "lines": true,
+      "linewidth": 1,
+      "nullPointMode": "null",
+      "options": {
+        "alertThreshold": true
+      },
+      "percentage": false,
+      "pluginVersion": "7.5.4",
+      "pointradius": 2,
+      "points": false,
+      "renderer": "flot",
+      "seriesOverrides": [],
+      "spaceLength": 10,
+      "stack": false,
+      "steppedLine": false,
+      "targets": [
+        {
+          "expr": "node:node_memory_utilisation:ratio",
+          "interval": "",
+          "legendFormat": "$Datasource {{node}}",
+          "refId": "A"
+        }
+      ],
+      "thresholds": [],
+      "timeFrom": null,
+      "timeRegions": [],
+      "timeShift": null,
+      "title": "Node Memory Usage",
+      "tooltip": {
+        "shared": true,
+        "sort": 2,
+        "value_type": "individual"
+      },
+      "type": "graph",
+      "xaxis": {
+        "buckets": null,
+        "mode": "time",
+        "name": null,
+        "show": true,
+        "values": []
+      },
+      "yaxes": [
+        {
+          "decimals": 0,
+          "format": "percentunit",
+          "label": null,
+          "logBase": 1,
+          "max": null,
+          "min": null,
+          "show": true
+        },
+        {
+          "format": "short",
+          "label": null,
+          "logBase": 1,
+          "max": null,
+          "min": null,
+          "show": true
+        }
+      ],
+      "yaxis": {
+        "align": false,
+        "alignLevel": null
+      }
+    },
+    {
+      "aliasColors": {},
+      "bars": false,
+      "dashLength": 10,
+      "dashes": false,
+      "datasource": "$Datasource",
+      "fieldConfig": {
+        "defaults": {},
+        "overrides": []
+      },
+      "fill": 1,
+      "fillGradient": 0,
+      "gridPos": {
+        "h": 11,
+        "w": 12,
+        "x": 12,
+        "y": 43
+      },
+      "hiddenSeries": false,
+      "id": 24,
+      "legend": {
+        "avg": false,
+        "current": false,
+        "max": false,
+        "min": false,
+        "show": true,
+        "total": false,
+        "values": false
+      },
+      "lines": true,
+      "linewidth": 1,
+      "nullPointMode": "null",
+      "options": {
+        "alertThreshold": true
+      },
+      "percentage": false,
+      "pluginVersion": "7.5.4",
+      "pointradius": 2,
+      "points": false,
+      "renderer": "flot",
+      "seriesOverrides": [],
+      "spaceLength": 10,
+      "stack": false,
+      "steppedLine": false,
+      "targets": [
+        {
+          "expr": "instance:node_cpu:ratio",
+          "interval": "",
+          "legendFormat": "$Datasource {{instance}}",
+          "refId": "A"
+        }
+      ],
+      "thresholds": [],
+      "timeFrom": null,
+      "timeRegions": [],
+      "timeShift": null,
+      "title": "Node CPU Usage",
+      "tooltip": {
+        "shared": true,
+        "sort": 2,
+        "value_type": "individual"
+      },
+      "type": "graph",
+      "xaxis": {
+        "buckets": null,
+        "mode": "time",
+        "name": null,
+        "show": true,
+        "values": []
+      },
+      "yaxes": [
+        {
+          "decimals": 0,
+          "format": "percentunit",
+          "label": null,
+          "logBase": 1,
+          "max": null,
+          "min": null,
+          "show": true
+        },
+        {
+          "format": "short",
+          "label": null,
+          "logBase": 1,
+          "max": null,
+          "min": null,
+          "show": true
+        }
+      ],
+      "yaxis": {
+        "align": false,
+        "alignLevel": null
+      }
+    }
+  ],
+  "schemaVersion": 27,
+  "style": "dark",
+  "tags": [],
+  "templating": {
+    "list": [
+      {
+        "current": {
+          "selected": false,
+          "text": "Prometheus us-phx-c",
+          "value": "Prometheus us-phx-c"
+        },
+        "description": null,
+        "error": null,
+        "hide": 0,
+        "includeAll": false,
+        "label": null,
+        "multi": false,
+        "name": "Datasource",
+        "options": [],
+        "query": "prometheus",
+        "queryValue": "",
+        "refresh": 1,
+        "regex": "Prometheus\\s.*",
+        "skipUrlSync": false,
+        "type": "datasource"
+      }
+    ]
+  },
+  "time": {
+    "from": "now-30m",
+    "to": "now"
+  },
+  "timepicker": {
+    "refresh_intervals": [
+      "10s",
+      "30s",
+      "1m",
+      "5m",
+      "15m",
+      "30m",
+      "1h",
+      "2h",
+      "1d"
+    ]
+  },
+  "timezone": "",
+  "title": "Kubernetes Cluster Status",
+  "uid": "6GQraw7Gk",
+  "version": 43
+}
