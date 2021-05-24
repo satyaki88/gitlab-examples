@@ -1,0 +1,215 @@
+image: containers.oracledatacloud.com/maven:3.6.2-jdk-11_ol7_0
+variables:
+  BUILD_DIR: "public"
+  # Options used by default by Maven
+  MAVEN_OPTS: "-Dmaven.repo.local=.m2/repository"
+  _JAVA_OPTIONS: "-Djdk.net.URLClassPath.disableClassPathURLCheck=true"
+
+cache: &cache_template
+  key: OFFLINE_DATA_ACTIVATION
+  paths:
+    - .m2/repository/
+    - badges
+
+stages:
+ - build
+ - dockerize
+ - deploy_dev
+ - deploy_rc
+ - deploy_prod
+
+audit:
+  # Template to only run on master
+  only:
+    - develop
+  image: containers.oracledatacloud.com/maven:3.5.4-jdk-8-alpine
+  tags: [odc-common-build]
+  stage: build
+  script:
+    # The result of this is an audit.svg which can be added as a badge using url:
+    # https://gitlab.oracledatacloud.com/${project_path}/-/jobs/artifacts/%{default_branch}/raw/badges/audit.svg?job=audit
+    # Get the audit results, without breaking the build when it finds things
+    - mvn  -Dmaven.test.skip=true verify
+    # capture the total vulnerabilities found and log it
+    - cat target/dependency-check-report.csv | grep -e '\(CRITICAL\),[0-9]\.[0-9]' | wc -l 2>/dev/null > audit_p || echo 'Finished reviewing results'
+    - total=$(cat audit_p)
+    - echo "Found ${total} audit issues"
+    # Set a color for the badge, green by default
+    - color='4c1'
+    - if [[ $total -ge 2 ]]; then color='e05d44'; fi
+    # Create badge
+    - mkdir -p badges
+    - echo "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"180\" height=\"20\"><linearGradient id=\"a\" x2=\"0\" y2=\"100%\"><stop offset=\"0\" stop-color=\"#bbb\" stop-opacity=\".1\"/><stop offset=\"1\" stop-opacity=\".1\"/></linearGradient><rect rx=\"3\" width=\"180\" height=\"20\" fill=\"#555\"/><rect rx=\"3\" x=\"60\" width=\"120\" height=\"20\" fill=\"#$color\"/><path fill=\"#$color\" d=\"M88 0h4v20h-4z\"/><rect rx=\"3\" width=\"180\" height=\"20\" fill=\"url(#a)\"/><g fill=\"#fff\" text-anchor=\"middle\" font-family=\"DejaVu Sans,Verdana,Geneva,sans-serif\" font-size=\"11\"><text x=\"30\" y=\"15\" fill=\"#010101\" fill-opacity=\".3\">Audit</text><text x=\"30\" y=\"14\">Audit</text><text x=\"110\" y=\"15\" fill=\"#010101\" fill-opacity=\".3\">${total} criticalVulnerabilities</text><text x=\"110\" y=\"14\">${total} criticalVulnerabilities</text></g></svg>" > badges/audit.svg
+  artifacts:
+    paths:
+      - badges
+
+build:
+  stage: build
+  image: containers.oracledatacloud.com/maven:3.5.4-jdk-8-alpine
+  tags: [odc-common-build]
+  cache:
+    <<: *cache_template
+
+  script:
+    - mvn verify -Dmaven.test.skip=true
+    - mvn -Ddependency-check.skip=false -Dmaven.test.skip=true package verify
+  artifacts:
+    untracked: false
+    expire_in: 2 day
+    paths:
+      - target/offline-data-activation-0.0.1-SNAPSHOT.jar
+
+dockerize master:
+  stage: dockerize
+  only:
+    - main
+
+  image:
+    # We must use the debug version because it has the embedded shell, which we use in our script below
+    name: gcr.io/kaniko-project/executor:debug-v0.7.0
+    entrypoint: [""]
+  tags: [odc-docker-build]
+  script:
+    - /kaniko/executor --context $CI_PROJECT_DIR --dockerfile $CI_PROJECT_DIR/Dockerfile  --destination containers.oracledatacloud.com/odc-fintech/finapps-offline-data-activation:MASTER-$CI_COMMIT_SHA
+
+
+#only for branch deployment
+dockerize branch:
+  stage: dockerize
+  except:
+      - main
+      - develop
+
+  image:
+    # We must use the debug version because it has the embedded shell, which we use in our script below
+    name: gcr.io/kaniko-project/executor:debug-v0.7.0
+    entrypoint: [""]
+  tags: [odc-docker-build]
+  script:
+    - /kaniko/executor --context $CI_PROJECT_DIR --dockerfile $CI_PROJECT_DIR/Dockerfile  --destination containers.oracledatacloud.com/odc-fintech/finapps-offline-data-activation:DEV-$CI_COMMIT_SHA
+
+dockerize rc:
+  stage: dockerize
+  only:
+    - develop
+  cache: *cache_template
+  image:
+    # We must use the debug version because it has the embedded shell, which we use in our script below
+    name: gcr.io/kaniko-project/executor:debug-v0.7.0
+    entrypoint: [""]
+  tags: [odc-docker-build]
+  script:
+    - /kaniko/executor --context $CI_PROJECT_DIR --dockerfile $CI_PROJECT_DIR/Dockerfile  --destination containers.oracledatacloud.com/odc-fintech/finapps-offline-data-activation:develop-$CI_COMMIT_SHA
+
+deploy k8s-dev oci:
+    stage: deploy_dev
+    image: containers.oracledatacloud.com/oracledatacloud.com/helmsman:v1.10.1-helm-v2.14.1-nonRoot
+    tags: [finapps,us-iad-a]
+    except:
+      - master
+      - develop
+
+    environment:
+        name: dev
+
+    dependencies: []
+    # no need to d/l cache b/c we are just deploying images from containers.oracledatacloud.com
+    cache: {}
+
+    script:
+        - echo Using image containers.oracledatacloud.com/odc-fintech/finapps-offline-data-activation:DEV-$CI_COMMIT_SHA
+        - echo Will deploy this from template
+        
+        # Below helm command is for phx cluster, do change the tags to us-iad-a
+        - helm template kubernetes -f kubernetes/values.dev.yaml --set imageSource=containers.oracledatacloud.com/odc-fintech/finapps-offline-data-activation:DEV-$CI_COMMIT_SHA
+        - helm template kubernetes -f kubernetes/values.dev.yaml --set imageSource=containers.oracledatacloud.com/odc-fintech/finapps-offline-data-activation:DEV-$CI_COMMIT_SHA  | kubectl  -n finapps-dev apply -f -
+        
+        # Below helm command is for phx cluster, do change the tags to us-phx-a
+        #- helm template kubernetes -f kubernetes/values.dev.yaml --set ingress.host=fintech-fb-api-public.us-phx-a.k8s-dev.oracledatacloud.com --set imageSource=containers.oracledatacloud.com/odc-fintech/finapps-fbadid-api:DEV-$CI_COMMIT_SHA
+        #- helm template kubernetes -f kubernetes/values.dev.yaml --set ingress.host=fintech-fb-api-public.us-phx-a.k8s-dev.oracledatacloud.com --set imageSource=containers.oracledatacloud.com/odc-fintech/finapps-fbadid-api:DEV-$CI_COMMIT_SHA  | kubectl  -n finapps-dev apply -f -
+      
+deploy k8s-qa-iad oci:
+    stage: deploy_rc
+    image: containers.oracledatacloud.com/oracledatacloud.com/helmsman:v1.10.1-helm-v2.14.1-nonRoot
+    tags: [finapps,us-iad-a]
+    environment:
+        name: rc
+    only:
+        - develop
+
+    dependencies: []
+    # no need to d/l cache b/c we are just deploying images from containers.oracledatacloud.com
+    cache: {}
+
+    script:
+        - echo Using image containers.oracledatacloud.com/odc-fintech/finapps-offline-data-activation:develop-$CI_COMMIT_SHA
+        - echo Will deploy this from template
+        - helm template kubernetes -f kubernetes/values.qa-iad.yaml  --set imageSource=containers.oracledatacloud.com/odc-fintech/finapps-offline-data-activation:develop-$CI_COMMIT_SHA
+        - helm template kubernetes -f kubernetes/values.qa-iad.yaml  --set imageSource=containers.oracledatacloud.com/odc-fintech/finapps-offline-data-activation:develop-$CI_COMMIT_SHA  | kubectl  -n finapps-test apply -f -
+
+#deploy k8s-qa-phx oci:
+#    stage: deploy_dev
+#    image: containers.oracledatacloud.com/oracledatacloud.com/helmsman:v1.10.1-helm-v2.14.1-nonRoot
+#    tags: [finapps,us-phx-a]
+#    environment:
+#        name: qa-phx
+#    only:
+#        - main
+#
+#    dependencies: []
+#    # no need to d/l cache b/c we are just deploying images from containers.oracledatacloud.com
+#    cache: {}
+#
+#    script:
+#        - echo Using image containers.oracledatacloud.com/odc-fintech/finapps-offline-data-activation:MASTER-$CI_COMMIT_SHA
+#        - echo Will deploy this from template
+#        - helm template kubernetes -f kubernetes/values.qa-phx.yaml --set imageSource=containers.oracledatacloud.com/odc-fintech/finapps-offline-data-activation:MASTER-$CI_COMMIT_SHA
+#        - helm template kubernetes -f kubernetes/values.qa-phx.yaml --set imageSource=containers.oracledatacloud.com/odc-fintech/finapps-offline-data-activation:MASTER-$CI_COMMIT_SHA  | kubectl  -n finapps-test apply -f -
+
+
+
+deploy prod IAD:
+    stage: deploy_prod
+    image: containers.oracledatacloud.com/oracledatacloud.com/helmsman:v1.10.1-helm-v2.14.1-nonRoot
+    tags: [finapps,us-iad-a]
+    only:
+      - main
+    when: manual
+    environment:
+        name: production-iad
+
+    dependencies: []
+    # no need to d/l cache b/c we are just deploying images from containers.oracledatacloud.com
+    cache: {}
+
+    script:
+        - echo Using image containers.oracledatacloud.com/odc-fintech/finapps-offline-data-activation:MASTER-$CI_COMMIT_SHA
+        - echo Will deploy this from template
+        - helm template kubernetes -f kubernetes/values.prod-iad.yaml  --set imageSource=containers.oracledatacloud.com/odc-fintech/finapps-offline-data-activation:MASTER-$CI_COMMIT_SHA
+        - helm template kubernetes -f kubernetes/values.prod-iad.yaml  --set imageSource=containers.oracledatacloud.com/odc-fintech/finapps-offline-data-activation:MASTER-$CI_COMMIT_SHA  | kubectl  -n finapps-prod apply -f -
+        - echo "Watching for successful rollout"
+        - kubectl -n finapps-prod rollout status deployment/offline-data-activation
+
+
+#deploy prod PHX:
+#    stage: deploy_prod
+#    image: containers.oracledatacloud.com/oracledatacloud.com/helmsman:v1.10.1-helm-v2.14.1-nonRoot
+#    tags: [finapps,us-phx-a]
+#    environment:
+#        name: production-phx
+#    only:
+#        - main
+#    when: manual
+#
+#    dependencies: []
+#    # no need to d/l cache b/c we are just deploying images from containers.oracledatacloud.com
+#    cache: {}
+#
+#    script:
+#        - echo Using image containers.oracledatacloud.com/odc-fintech/finapps-offline-data-activation:MASTER-$CI_COMMIT_SHA
+#        - echo Will deploy this from template
+#        - helm template kubernetes -f kubernetes/values.prod-phx.yaml  --set imageSource=containers.oracledatacloud.com/odc-fintech/finapps-offline-data-activation:MASTER-$CI_COMMIT_SHA
+#        - helm template kubernetes -f kubernetes/values.prod-phx.yaml  --set imageSource=containers.oracledatacloud.com/odc-fintech/finapps-offline-data-activation:MASTER-$CI_COMMIT_SHA  | kubectl  -n finapps-prod apply -f -
+#        - echo "Watching for successful rollout"
+#        - kubectl -n finapps-prod rollout status deployment/offline-data-activation
